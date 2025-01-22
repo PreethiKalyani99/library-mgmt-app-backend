@@ -13,17 +13,22 @@ interface UpdateProps {
 }
 
 interface GetAuthorProps {
-    author_id: number | undefined
+    author_id: number
+}
+
+interface GetAuthorsByPage {
+    page_number: number
+    page_size: number
 }
 
 const authors = AppDataSource.getRepository(Authors)
 
-export async function insertAuthor({ name, country }: AuthorData){
-    if(!name){
+export async function insertAuthor({ name, country }: AuthorData) {
+    if (!name) {
         throw new Error("Author name is required")
     }
     const newAuthor = authors.create({
-        name, 
+        name,
         country: country || null
     })
 
@@ -31,18 +36,18 @@ export async function insertAuthor({ name, country }: AuthorData){
     return newAuthor
 }
 
-export async function updateAuthor({ author_id, name, country }: UpdateProps){
-    const authorToUpdate = await authors.findOne({ where: { author_id }})
+export async function updateAuthor({ author_id, name, country }: UpdateProps) {
+    const authorToUpdate = await authors.findOne({ where: { author_id } })
 
-    if(!authorToUpdate){
+    if (!authorToUpdate) {
         throw new Error(`Author with id ${author_id} not found`)
     }
 
-    if(name){
+    if (name) {
         authorToUpdate.name = name
     }
 
-    if(country){
+    if (country) {
         authorToUpdate.country = country
     }
 
@@ -51,10 +56,10 @@ export async function updateAuthor({ author_id, name, country }: UpdateProps){
     return authorToUpdate
 }
 
-export async function deleteAuthor(author_id: number){
-    const authorToDelete = await authors.findOne({ where: { author_id }})
+export async function deleteAuthor(author_id: number) {
+    const authorToDelete = await authors.findOne({ where: { author_id } })
 
-    if(!authorToDelete){
+    if (!authorToDelete) {
         throw new Error(`Author with id ${author_id} not found`)
     }
 
@@ -63,18 +68,33 @@ export async function deleteAuthor(author_id: number){
     return authorToDelete
 }
 
-export async function getAuthor({ author_id }: GetAuthorProps){
-    if(author_id){
-        const author = await authors.findOne({ where: { author_id }})
-        if(author){
-            return author
-        }
-        else{
-            throw new Error(`Author with id ${author_id} not found`)
+export async function getAuthorsById({ author_id }: GetAuthorProps) {
+    const author = await authors.findOne({ where: { author_id } })
+    if (author) {
+        return author
+    }
+    else {
+        throw new Error(`Author with id ${author_id} not found`)
+    }
+}
+
+export async function getAuthorsByPage({ page_number, page_size}: GetAuthorsByPage) {
+    const skip = (page_number - 1) * page_size
+    const [data, totalCount] = await authors.findAndCount({ skip, take: page_size })
+
+    if (page_size > totalCount) {
+        const allData = await authors.find()
+        return {
+            data: allData,
+            totalCount,
+            totalPages: Math.ceil(totalCount / page_size)
         }
     }
-    else{
-        const allAuthors = await authors.find()
-        return allAuthors
+
+    return {
+        data,
+        totalCount,
+        totalPages: Math.ceil(totalCount / page_size),
+        currentPage: page_number
     }
 }
