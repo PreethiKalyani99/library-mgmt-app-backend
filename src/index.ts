@@ -79,6 +79,25 @@ AppDataSource.initialize().then(async () => {
         }
     })
 
+    app.delete('/authors/:id', async (req: Request, res: Response) => {
+        const { id } = req.params
+
+        try{
+            if(!id){
+                throw new Error("ID is required")
+            }
+            if (id && !/^[0-9]+$/.test(id.toString())) {
+                throw new Error(`ID ${id} is invalid`)
+            }
+            await deleteAuthor(Number(id))
+            res.status(200).send()
+        }
+        catch(error){
+            console.error('Error:', error.message)
+            res.status(404).json({ error: error.message })
+        }
+    })
+
     app.get('/books/:id', async (req: Request, res: Response) => {
         const { id } = req.params
 
