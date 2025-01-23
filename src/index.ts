@@ -7,6 +7,9 @@ const app: Express = express()
 const port: number = 4000
 
 app.use(express.json())
+app.use(express.urlencoded({
+    extended: true
+}))
 
 app.use('/authors', authorRoutes)
 app.use('/books', bookRoutes)
