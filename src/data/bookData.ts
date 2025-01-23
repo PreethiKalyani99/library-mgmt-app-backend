@@ -1,20 +1,23 @@
 import { AppDataSource } from "../data-source";
 import { Books } from "../entity/Books";
 import { Authors } from "../entity/Authors";
-
-
-interface BookProps {
-    author_id?: number;
-    published_year?: number;
+import { insertAuthor } from "./authorData";
+interface Author {
+    id?: number
+    name?: string
+    country?: string
 }
-
-interface InsertProps extends BookProps {
+interface InsertProps {
+    author?: Author
     title: string
+    published_year?: number
 }
 
-interface UpdateProps extends BookProps {
+interface UpdateProps {
     book_id: number
     title?: string
+    published_year?: number
+    author?: Author
 }
 
 interface GetBookById {
@@ -24,24 +27,50 @@ interface GetBookById {
 const books = AppDataSource.getRepository(Books)
 const authors = AppDataSource.getRepository(Authors)
 
-async function isAuthorAvailable(author_id: number) {
-    const author = await authors.findOne({ where: { author_id } })
-    if (author) {
-        return author
+async function isAuthorAvailable(author_id: number | null, name: string | null) {
+    if(author_id){
+        const author = await authors.findOne({ where: { author_id } })
+        if (author) {
+            return author
+        }
+    }
+    else{
+        const author = await authors.createQueryBuilder("author")
+        .where("LOWER(author.name) = LOWER(:name)", {name})
+        .getOne()
+
+        if(author){
+            return author
+        }
     }
 }
 
-export async function insertBook({ title, author_id, published_year }: InsertProps) {
+export async function insertBook({ author, title, published_year }: InsertProps) {
     const newBook = new Books()
     newBook.title = title
 
-    if (author_id) {
-        const author = await isAuthorAvailable(author_id)
+    if(!author.id && !author.name){
+        throw new Error("Either author name or author id is required")
+    }
 
-        if (!author) {
-            throw new Error(`Author id ${author_id} not found`)
+    if (author.id) {
+        const authorAvailable = await isAuthorAvailable(author.id, null)
+
+        if (!authorAvailable) {
+            throw new Error(`Author id ${author.id} not found`)
         }
-        newBook.author = author
+        newBook.author = authorAvailable
+    }
+
+    if(author.name){
+        const authorAvailable = await isAuthorAvailable(null, author.name)
+        if(authorAvailable){
+            newBook.author = authorAvailable
+        }
+        else{
+            const newAuthor = await insertAuthor({name: author.name, country: author.country || null})
+            newBook.author = newAuthor
+        }
     }
 
     if (published_year) {
@@ -52,7 +81,7 @@ export async function insertBook({ title, author_id, published_year }: InsertPro
     return newBook
 }
 
-export async function updateBook({ book_id, title, author_id, published_year }: UpdateProps) {
+export async function updateBook({ book_id, title, author, published_year }: UpdateProps) {
     const bookToUpdate = await books.findOne({ where: { book_id: book_id } })
 
     if (!bookToUpdate) {
@@ -63,15 +92,26 @@ export async function updateBook({ book_id, title, author_id, published_year }: 
         bookToUpdate.title = title
     }
 
-    if (author_id) {
-        const author = await isAuthorAvailable(author_id)
-        if (!author) {
-            throw new Error(`Author id ${author_id} not found`)
+    if (author?.id) {
+        const authorAvailable = await isAuthorAvailable(author.id, null)
+        if (!authorAvailable) {
+            throw new Error(`Author id ${author.id} not found`)
         }
 
-        bookToUpdate.author = author
+        bookToUpdate.author = authorAvailable
     }
 
+    if(author?.name){
+        const authorAvailable = await isAuthorAvailable(null, author.name)
+        if(!authorAvailable){
+            const newAuthor = await insertAuthor({name: author.name, country: author.country || null})
+            bookToUpdate.author = newAuthor
+        }
+        else{
+            bookToUpdate.author = authorAvailable
+        }
+
+    }
     if (published_year && !isNaN(published_year)) {
         bookToUpdate.published_year = published_year
     }

@@ -39,16 +39,16 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 router.post('/', async (req: Request, res: Response) => {
-    const { author_id, title, published_year } = req.body
+    const { author, title, published_year } = req.body
     try{
-        if(!author_id || !title){
-            throw new Error('Author id and title are required')
+        if(!title){
+            throw new Error("Title is required")
         }
-        if (author_id && !/^[0-9]+$/.test(author_id.toString())) {
-            throw new Error(`ID ${author_id} is invalid`)
+        if (author.id && !/^[0-9]+$/.test(author.id.toString())) {
+            throw new Error(`ID ${author.id} is invalid`)
         }
 
-        const result = await insertBook({author_id: author_id, title: title, published_year: published_year})
+        const result = await insertBook({author: author, title: title, published_year: published_year})
         res.status(201).json(result)
 
     }
@@ -60,7 +60,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
     const { id } = req.params
-    const { author_id, title, published_year } = req.body
+    const { author, title, published_year } = req.body
 
     try{
         if(!id){
@@ -69,7 +69,7 @@ router.put('/:id', async (req: Request, res: Response) => {
         if (id && !/^[0-9]+$/.test(id.toString())) {
             throw new Error(`ID ${id} is invalid`);
         }
-        const result = await updateBook({ book_id: Number(id), author_id: author_id, title: title, published_year: published_year })
+        const result = await updateBook({ book_id: Number(id), author: author, title: title, published_year: published_year })
         res.status(200).json(result)
     }
     catch(error){
