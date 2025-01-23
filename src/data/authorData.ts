@@ -1,12 +1,14 @@
-import { AppDataSource } from "../data-source";
 import { Authors } from "../entity/Authors";
+import { AppDataSource } from "../data-source";
 
 interface AuthorData {
+    queryRunner: any
     name: string
     country?: string | null
 }
 
 interface UpdateProps {
+    queryRunner: any
     author_id: number
     name?: string
     country?: string
@@ -23,21 +25,21 @@ interface GetAuthorsByPage {
 
 const authors = AppDataSource.getRepository(Authors)
 
-export async function insertAuthor({ name, country }: AuthorData) {
+export async function insertAuthor({ name, country, queryRunner }: AuthorData) {
     if (!name) {
         throw new Error("Author name is required")
     }
-    const newAuthor = authors.create({
+    const newAuthor = queryRunner.manager.create(Authors, {
         name,
         country: country || null
     })
 
-    await authors.save(newAuthor)
+    await queryRunner.manager.save(newAuthor)
     return newAuthor
 }
 
-export async function updateAuthor({ author_id, name, country }: UpdateProps) {
-    const authorToUpdate = await authors.findOne({ where: { author_id } })
+export async function updateAuthor({ author_id, name, country, queryRunner }: UpdateProps) {
+    const authorToUpdate = await queryRunner.manager.findOne(Authors, { where: { author_id } })
 
     if (!authorToUpdate) {
         throw new Error(`Author with id ${author_id} not found`)
@@ -51,19 +53,19 @@ export async function updateAuthor({ author_id, name, country }: UpdateProps) {
         authorToUpdate.country = country
     }
 
-    await authors.save(authorToUpdate)
+    await queryRunner.manager.save(authorToUpdate)
 
     return authorToUpdate
 }
 
-export async function deleteAuthor(author_id: number) {
-    const authorToDelete = await authors.findOne({ where: { author_id } })
+export async function deleteAuthor(author_id: number, queryRunner: any) {
+    const authorToDelete = await queryRunner.manager.findOne(Authors, { where: { author_id } })
 
     if (!authorToDelete) {
         throw new Error(`Author with id ${author_id} not found`)
     }
 
-    await authors.remove(authorToDelete)
+    await queryRunner.manager.remove(authorToDelete)
 
     return authorToDelete
 }
@@ -78,7 +80,7 @@ export async function getAuthorsById({ author_id }: GetAuthorProps) {
     }
 }
 
-export async function getAuthorsByPage({ page_number, page_size}: GetAuthorsByPage) {
+export async function getAuthorsByPage({ page_number, page_size }: GetAuthorsByPage) {
     const skip = (page_number - 1) * page_size
     const [data, totalCount] = await authors.findAndCount({ skip, take: page_size })
 
