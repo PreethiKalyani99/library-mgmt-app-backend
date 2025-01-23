@@ -1,19 +1,21 @@
-import { AppDataSource } from "../data-source";
 import { Books } from "../entity/Books";
 import { Authors } from "../entity/Authors";
 import { insertAuthor } from "./authorData";
+import { AppDataSource } from "../data-source";
 interface Author {
     id?: number
     name?: string
     country?: string
 }
 interface InsertProps {
-    author?: Author
+    queryRunner: any
     title: string
+    author?: Author
     published_year?: number
 }
 
 interface UpdateProps {
+    queryRunner: any
     book_id: number
     title?: string
     published_year?: number
@@ -24,18 +26,22 @@ interface GetBookById {
     book_id: number | null
 }
 
-const books = AppDataSource.getRepository(Books)
-const authors = AppDataSource.getRepository(Authors)
+interface GetBooksByPage {
+    page_number: number
+    page_size: number
+}
 
-async function isAuthorAvailable(author_id: number | null, name: string | null) {
+const books = AppDataSource.getRepository(Books)
+
+async function isAuthorAvailable(author_id: number | null, name: string | null, queryRunner: any) {
     if(author_id){
-        const author = await authors.findOne({ where: { author_id } })
+        const author = await queryRunner.manager.findOne(Authors, { where: { author_id } })
         if (author) {
             return author
         }
     }
     else{
-        const author = await authors.createQueryBuilder("author")
+        const author = await queryRunner.manager.createQueryBuilder(Authors, "author")
         .where("LOWER(author.name) = LOWER(:name)", {name})
         .getOne()
 
@@ -45,16 +51,16 @@ async function isAuthorAvailable(author_id: number | null, name: string | null) 
     }
 }
 
-export async function insertBook({ author, title, published_year }: InsertProps) {
+export async function insertBook({ author, title, published_year, queryRunner }: InsertProps) {
     const newBook = new Books()
     newBook.title = title
 
-    if(!author.id && !author.name){
+    if(!author?.id && !author?.name){
         throw new Error("Either author name or author id is required")
     }
 
     if (author.id) {
-        const authorAvailable = await isAuthorAvailable(author.id, null)
+        const authorAvailable = await isAuthorAvailable(author.id, null, queryRunner)
 
         if (!authorAvailable) {
             throw new Error(`Author id ${author.id} not found`)
@@ -63,12 +69,12 @@ export async function insertBook({ author, title, published_year }: InsertProps)
     }
 
     if(author.name){
-        const authorAvailable = await isAuthorAvailable(null, author.name)
+        const authorAvailable = await isAuthorAvailable(null, author.name, queryRunner)
         if(authorAvailable){
             newBook.author = authorAvailable
         }
         else{
-            const newAuthor = await insertAuthor({name: author.name, country: author.country || null})
+            const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner})
             newBook.author = newAuthor
         }
     }
@@ -77,12 +83,12 @@ export async function insertBook({ author, title, published_year }: InsertProps)
         newBook.published_year = published_year
     }
 
-    await books.save(newBook)
+    await queryRunner.manager.save(newBook)
     return newBook
 }
 
-export async function updateBook({ book_id, title, author, published_year }: UpdateProps) {
-    const bookToUpdate = await books.findOne({ where: { book_id: book_id } })
+export async function updateBook({ book_id, title, author, published_year, queryRunner }: UpdateProps) {
+    const bookToUpdate = await queryRunner.manager.findOne(Books, { where: { book_id: book_id } })
 
     if (!bookToUpdate) {
         throw new Error(`Book with id ${book_id} not found`)
@@ -93,7 +99,7 @@ export async function updateBook({ book_id, title, author, published_year }: Upd
     }
 
     if (author?.id) {
-        const authorAvailable = await isAuthorAvailable(author.id, null)
+        const authorAvailable = await isAuthorAvailable(author.id, null, queryRunner)
         if (!authorAvailable) {
             throw new Error(`Author id ${author.id} not found`)
         }
@@ -102,9 +108,9 @@ export async function updateBook({ book_id, title, author, published_year }: Upd
     }
 
     if(author?.name){
-        const authorAvailable = await isAuthorAvailable(null, author.name)
+        const authorAvailable = await isAuthorAvailable(null, author.name, queryRunner)
         if(!authorAvailable){
-            const newAuthor = await insertAuthor({name: author.name, country: author.country || null})
+            const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner})
             bookToUpdate.author = newAuthor
         }
         else{
@@ -116,17 +122,17 @@ export async function updateBook({ book_id, title, author, published_year }: Upd
         bookToUpdate.published_year = published_year
     }
 
-    books.save(bookToUpdate)
+    queryRunner.manager.save(bookToUpdate)
     return bookToUpdate
 }
 
-export async function deleteBook(book_id: number) {
-    const bookToDelete = await books.findOne({ where: { book_id } })
+export async function deleteBook(book_id: number, queryRunner: any) {
+    const bookToDelete = await queryRunner.manager.findOne(Books, { where: { book_id } })
 
     if (!bookToDelete) {
         throw new Error(`Book with id ${book_id} not found`)
     }
-    await books.remove(bookToDelete)
+    await queryRunner.manager.remove(bookToDelete)
 
     return bookToDelete
 }
@@ -142,7 +148,7 @@ export async function getBookById({ book_id }: GetBookById) {
     }
 }
 
-export async function getBooksByPage({ page_number, page_size }){
+export async function getBooksByPage({ page_number, page_size }: GetBooksByPage){
     const skip = (page_number - 1) * page_size
     const [data, totalCount] = await books.findAndCount({ skip, take: page_size, relations:['author'] })
 
