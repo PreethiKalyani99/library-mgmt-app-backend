@@ -4,7 +4,7 @@ import authorRoutes from "./routes/authorRoutes"
 import bookRoutes from "./routes/bookRoutes"
 
 const app: Express = express()
-const port: number = 4000
+const port: number = 5432
 
 app.use(express.json())
 app.use(express.urlencoded({
@@ -16,7 +16,7 @@ app.use('/books', bookRoutes)
 
 AppDataSource.initialize().then(async () => {
     app.listen(port, () => {
-        console.log(`Server is running at http://localhost:${port}`);
+        console.log(`Server is running at http://dpg-cu964d56l47c73d6g32g-a:${port}`);
     })
     
 }).catch(error => console.log(error))

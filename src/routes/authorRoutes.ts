@@ -39,7 +39,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 })
 
-router.post(['/', '/authors-form'], async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
     const { name, country } = req.body
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
