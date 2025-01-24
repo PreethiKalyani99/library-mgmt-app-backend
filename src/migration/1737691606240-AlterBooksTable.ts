@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AlterBooksTable1737562453700 implements MigrationInterface {
+export class AlterBooksTable1737691606240 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE books ALTER COLUMN author_id SET NOT NULL`)
