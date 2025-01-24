@@ -1,10 +1,12 @@
 import express, { Express } from "express"
+import cors from "cors";
 import { AppDataSource } from "./data-source"
 import authorRoutes from "./routes/authorRoutes"
 import bookRoutes from "./routes/bookRoutes"
 
 const app: Express = express()
 const port: number = 5432
+app.use(cors())
 
 app.use(express.json())
 app.use(express.urlencoded({
