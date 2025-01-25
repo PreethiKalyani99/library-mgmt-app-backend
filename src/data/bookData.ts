@@ -33,7 +33,7 @@ interface GetBooksByPage {
 
 const books = AppDataSource.getRepository(Books)
 
-async function isAuthorAvailable(author_id: number | null, name: string | null, queryRunner: any) {
+async function isAuthorExists(author_id: number | null, name: string | null, queryRunner: any) {
     if(author_id){
         const author = await queryRunner.manager.findOne(Authors, { where: { author_id } })
         if (author) {
@@ -60,18 +60,18 @@ export async function insertBook({ author, title, published_year, queryRunner }:
     }
 
     if (author.id) {
-        const authorAvailable = await isAuthorAvailable(author.id, null, queryRunner)
+        const authorExists = await isAuthorExists(author.id, null, queryRunner)
 
-        if (!authorAvailable) {
+        if (!authorExists) {
             throw new Error(`Author id ${author.id} not found`)
         }
-        newBook.author = authorAvailable
+        newBook.author = authorExists
     }
 
     if(author.name){
-        const authorAvailable = await isAuthorAvailable(null, author.name, queryRunner)
-        if(authorAvailable){
-            newBook.author = authorAvailable
+        const authorExists = await isAuthorExists(null, author.name, queryRunner)
+        if(authorExists){
+            newBook.author = authorExists
         }
         else{
             const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner})
@@ -99,22 +99,22 @@ export async function updateBook({ book_id, title, author, published_year, query
     }
 
     if (author?.id) {
-        const authorAvailable = await isAuthorAvailable(author.id, null, queryRunner)
-        if (!authorAvailable) {
+        const authorExists = await isAuthorExists(author.id, null, queryRunner)
+        if (!authorExists) {
             throw new Error(`Author id ${author.id} not found`)
         }
 
-        bookToUpdate.author = authorAvailable
+        bookToUpdate.author = authorExists
     }
 
     if(author?.name){
-        const authorAvailable = await isAuthorAvailable(null, author.name, queryRunner)
-        if(!authorAvailable){
+        const authorExists = await isAuthorExists(null, author.name, queryRunner)
+        if(!authorExists){
             const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner})
             bookToUpdate.author = newAuthor
         }
         else{
-            bookToUpdate.author = authorAvailable
+            bookToUpdate.author = authorExists
         }
 
     }
