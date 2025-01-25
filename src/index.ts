@@ -3,6 +3,7 @@ import cors from "cors";
 import { AppDataSource } from "./data-source"
 import authorRoutes from "./routes/authorRoutes"
 import bookRoutes from "./routes/bookRoutes"
+import userRoutes from "./routes/userRoutes"
 
 const app: Express = express()
 const port: number = 5432
@@ -15,6 +16,7 @@ app.use(express.urlencoded({
 
 app.use('/authors', authorRoutes)
 app.use('/books', bookRoutes)
+app.use('/users', userRoutes)
 
 AppDataSource.initialize().then(async () => {
     app.listen(port, () => {
