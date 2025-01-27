@@ -1,9 +1,8 @@
 import express, { Express } from "express"
 import cors from "cors";
 import { AppDataSource } from "./data-source"
-import authorRoutes from "./routes/authorRoutes"
-import bookRoutes from "./routes/bookRoutes"
-import userRoutes from "./routes/userRoutes"
+import routes from "./routes/index"
+import passport from "passport";
 
 const app: Express = express()
 const port: number = 5432
@@ -14,13 +13,12 @@ app.use(express.urlencoded({
     extended: true
 }))
 
-app.use('/authors', authorRoutes)
-app.use('/books', bookRoutes)
-app.use('/users', userRoutes)
+app.use(passport.initialize())
+app.use(routes)
 
 AppDataSource.initialize().then(async () => {
     app.listen(port, () => {
         console.log(`Server is running at http://dpg-cu964d56l47c73d6g32g-a:${port}`);
     })
     
-}).catch(error => console.log(error))
+}).catch(error => console.log(error))   
