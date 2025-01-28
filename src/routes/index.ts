@@ -3,7 +3,7 @@ import { verifyToken } from "../middleware/verifyToken"
 import authorRoutes from '../routes/authorRoutes'
 import bookRoutes from "../routes/bookRoutes"
 import userRoutes from "../routes/userRoutes"
-import "../strategies/local-strategies"
+import "../strategy/localStrategy"
 
 const router = Router()
 
