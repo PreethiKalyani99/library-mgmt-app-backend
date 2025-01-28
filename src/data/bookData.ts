@@ -1,5 +1,6 @@
 import { Books } from "../entity/Books";
 import { Authors } from "../entity/Authors";
+import { Users } from "../entity/Users";
 import { insertAuthor } from "./authorData";
 import { AppDataSource } from "../data-source";
 interface Author {
@@ -9,12 +10,14 @@ interface Author {
 }
 interface InsertProps {
     queryRunner: any
+    userId: number
     title: string
     author?: Author
     published_year?: number
 }
 
 interface UpdateProps {
+    userId: number
     queryRunner: any
     book_id: number
     title?: string
@@ -51,7 +54,7 @@ async function isAuthorExists(author_id: number | null, name: string | null, que
     }
 }
 
-export async function insertBook({ author, title, published_year, queryRunner }: InsertProps) {
+export async function insertBook({ author, title, published_year, queryRunner, userId }: InsertProps) {
     const newBook = new Books()
     newBook.title = title
 
@@ -74,7 +77,7 @@ export async function insertBook({ author, title, published_year, queryRunner }:
             newBook.author = authorExists
         }
         else{
-            const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner})
+            const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner, userId})
             newBook.author = newAuthor
         }
     }
@@ -83,11 +86,16 @@ export async function insertBook({ author, title, published_year, queryRunner }:
         newBook.published_year = published_year
     }
 
+    if(userId){
+        const user = await queryRunner.manager.findOne(Users, { where: { user_id: userId }})
+        newBook.users = user || null
+    }
+
     await queryRunner.manager.save(newBook)
     return newBook
 }
 
-export async function updateBook({ book_id, title, author, published_year, queryRunner }: UpdateProps) {
+export async function updateBook({ book_id, title, author, published_year, queryRunner, userId }: UpdateProps) {
     const bookToUpdate = await queryRunner.manager.findOne(Books, { where: { book_id: book_id } })
 
     if (!bookToUpdate) {
@@ -110,7 +118,7 @@ export async function updateBook({ book_id, title, author, published_year, query
     if(author?.name){
         const authorExists = await isAuthorExists(null, author.name, queryRunner)
         if(!authorExists){
-            const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner})
+            const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner, userId})
             bookToUpdate.author = newAuthor
         }
         else{

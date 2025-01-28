@@ -1,8 +1,10 @@
 import { Authors } from "../entity/Authors";
 import { AppDataSource } from "../data-source";
+import { Users } from "../entity/Users";
 
 interface AuthorData {
     queryRunner: any
+    userId: number
     name: string
     country?: string | null
 }
@@ -25,13 +27,16 @@ interface GetAuthorsByPage {
 
 const authors = AppDataSource.getRepository(Authors)
 
-export async function insertAuthor({ name, country, queryRunner }: AuthorData) {
+export async function insertAuthor({ name, country, queryRunner, userId }: AuthorData) {
     if (!name) {
         throw new Error("Author name is required")
     }
+    const user = await queryRunner.manager.findOne(Users, { where: { user_id: userId }})
+
     const newAuthor = queryRunner.manager.create(Authors, {
         name,
-        country: country || null
+        country: country || null,
+        created_by: user || null
     })
 
     await queryRunner.manager.save(newAuthor)
@@ -82,10 +87,10 @@ export async function getAuthorsById({ author_id }: GetAuthorProps) {
 
 export async function getAuthorsByPage({ page_number, page_size }: GetAuthorsByPage) {
     const skip = (page_number - 1) * page_size
-    const [data, totalCount] = await authors.findAndCount({ skip, take: page_size })
+    const [data, totalCount] = await authors.findAndCount({ skip, take: page_size, relations: ['users'] })
 
     if (page_size > totalCount) {
-        const allData = await authors.find()
+        const allData = await authors.find({relations: ['users']})
         return {
             data: allData,
             totalCount,

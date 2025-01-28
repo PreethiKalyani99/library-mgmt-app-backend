@@ -1,11 +1,12 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { insertBook, updateBook, deleteBook, getBookById, getBooksByPage } from "../data/bookData";
+import { JwtPayload } from "jsonwebtoken";
 
 const router = Router()
 
 router.get('/:id', async (req: Request, res: Response) => {
-    const { id } = req.params
+    const { id } = req.params 
 
     try{
         if(!id){
@@ -41,6 +42,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
     const { author, title, published_year } = req.body
+    const { userId } = req.user as JwtPayload
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
@@ -53,7 +55,7 @@ router.post('/', async (req: Request, res: Response) => {
             throw new Error(`ID ${author.id} is invalid`)
         }
 
-        const result = await insertBook({author: author, title: title, published_year: published_year, queryRunner})
+        const result = await insertBook({author: author, title: title, published_year: published_year, queryRunner, userId: userId})
         await queryRunner.commitTransaction()
         res.status(201).json(result)
 
@@ -70,6 +72,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
     const { id } = req.params
+    const { userId } = req.user as JwtPayload
     const { author, title, published_year } = req.body
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
@@ -81,7 +84,7 @@ router.put('/:id', async (req: Request, res: Response) => {
         if (id && !/^[0-9]+$/.test(id.toString())) {
             throw new Error(`ID ${id} is invalid`);
         }
-        const result = await updateBook({ book_id: Number(id), author: author, title: title, published_year: published_year, queryRunner })
+        const result = await updateBook({ book_id: Number(id), author: author, title: title, published_year: published_year, queryRunner, userId })
         await queryRunner.commitTransaction()
         res.status(200).json(result)
     }

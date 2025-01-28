@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
+import { JwtPayload} from 'jsonwebtoken'
 import { insertAuthor, updateAuthor, deleteAuthor, getAuthorsById, getAuthorsByPage } from "../data/authorData";
 
 const router = Router()
@@ -41,14 +42,16 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
     const { name, country } = req.body
+    const { userId } = req.user as JwtPayload
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
+
     await queryRunner.startTransaction()
     try {
         if (!name && !country) {
             throw new Error("Name is required")
         }
-        const result = await insertAuthor({ name: name, country: country, queryRunner })
+        const result = await insertAuthor({ name: name, country: country, queryRunner, userId: userId })
         await queryRunner.commitTransaction()
         res.status(201).json(result)
     }
