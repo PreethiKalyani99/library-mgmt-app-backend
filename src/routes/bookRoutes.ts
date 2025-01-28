@@ -1,21 +1,19 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { insertBook, updateBook, deleteBook, getBookById, getBooksByPage } from "../data/bookData";
-import { JwtPayload } from "jsonwebtoken";
+import { verifyID } from "../middleware/verifyID";
+
+interface JwtPayload {
+    userId: number
+    email: string
+}
 
 const router = Router()
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', verifyID, async (req: Request, res: Response) => {
     const { id } = req.params 
 
     try{
-        if(!id){
-            throw new Error("ID is required")
-        }
-        if (id && !/^[0-9]+$/.test(id.toString())) {
-            throw new Error(`ID ${id} is invalid`)
-        }
-
         const result =  await getBookById({book_id: Number(id)})
         res.status(200).json(result)
     }
@@ -70,7 +68,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 })
 
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
     const { userId } = req.user as JwtPayload
     const { author, title, published_year } = req.body
@@ -78,12 +76,6 @@ router.put('/:id', async (req: Request, res: Response) => {
     await queryRunner.connect()
     await queryRunner.startTransaction()
     try{
-        if(!id){
-            throw new Error("ID is required")
-        }
-        if (id && !/^[0-9]+$/.test(id.toString())) {
-            throw new Error(`ID ${id} is invalid`);
-        }
         const result = await updateBook({ book_id: Number(id), author: author, title: title, published_year: published_year, queryRunner, userId })
         await queryRunner.commitTransaction()
         res.status(200).json(result)
@@ -98,19 +90,13 @@ router.put('/:id', async (req: Request, res: Response) => {
     }
 })
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
 
     try{
-        if(!id){
-            throw new Error("ID is required")
-        }
-        if (id && !/^[0-9]+$/.test(id.toString())) {
-            throw new Error(`ID ${id} is invalid`)
-        }
         await deleteBook(Number(id), queryRunner)
         await queryRunner.commitTransaction()
         res.status(200).send()
