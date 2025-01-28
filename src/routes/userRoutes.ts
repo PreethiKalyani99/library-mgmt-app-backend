@@ -32,7 +32,7 @@ router.post('/sign-up', async (req: Request, res: Response) => {
     }
 })
 
-router.post('/login', passport.authenticate('local', { session: false, failureRedirect: '/login', failureMessage: true }),  
+router.post('/login', passport.authenticate('local', { session: false }),  
     async (req: Request, res: Response) => {
         const { token } = req.user as { token: string }
         res.status(200).json({ token: token })

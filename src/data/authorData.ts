@@ -76,7 +76,7 @@ export async function deleteAuthor(author_id: number, queryRunner: any) {
 }
 
 export async function getAuthorsById({ author_id }: GetAuthorProps) {
-    const author = await authors.findOne({ where: { author_id } })
+    const author = await authors.findOne({ where: { author_id }, relations: ['users'] })
     if (author) {
         return author
     }
