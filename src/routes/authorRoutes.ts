@@ -24,11 +24,11 @@ router.get('/:id', verifyID, async (req: Request, res: Response) => {
 })
 
 router.get('/', async (req: Request, res: Response) => {
-    const { page_number, page_size } = req.query
+    const { page_number, page_size, all } = req.query
     const pageNumber = /^[0-9]+$/.test(page_number?.toString()) ? Number(page_number) : 1
     const pageSize = /^[0-9]+$/.test(page_size?.toString()) ? Number(page_size) : 10
     try {
-        const result = await getAuthorsByPage({ page_number: pageNumber, page_size: pageSize })
+        const result = await getAuthorsByPage({ page_number: pageNumber, page_size: pageSize, str: all?.toString() || '' })
 
         res.status(200).json(result)
     }
@@ -46,8 +46,8 @@ router.post('/', async (req: Request, res: Response) => {
 
     await queryRunner.startTransaction()
     try {
-        if (!name && !country) {
-            throw new Error("Name is required")
+        if(!name){
+            throw new Error("Author name is required") 
         }
         const result = await insertAuthor({ name: name, country: country, queryRunner, userId: userId })
         await queryRunner.commitTransaction()
