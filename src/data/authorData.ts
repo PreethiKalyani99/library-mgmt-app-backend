@@ -24,6 +24,7 @@ interface GetAuthorsByPage {
     str?: string
     page_number: number
     page_size: number
+    search?: string
 }
 
 const authors = AppDataSource.getRepository(Authors)
@@ -83,28 +84,25 @@ export async function getAuthorsById({ author_id }: GetAuthorProps) {
     }
 }
 
-async function getAllAuthors(){
-    const allData = await authors.find({relations: ['users']})
-    return allData 
+function getAllAuthors(){
+    return authors.createQueryBuilder("author").leftJoin('author.users', 'users').addSelect(['users.user_id', 'users.email']).getMany()
 }
 
-export async function getAuthorsByPage({ page_number, page_size, str }: GetAuthorsByPage) {
-    if(str.toLowerCase() === 'all'){
-        const allData = await getAllAuthors()
-        return allData
+export async function getAuthorsByPage({ page_number, page_size, str, search }: GetAuthorsByPage) {
+    if(str.toLowerCase() === 'all' && search === ''){
+        return getAllAuthors()
     }
+
     const skip = (page_number - 1) * page_size
-    const [data, totalCount] = await authors.findAndCount({ skip, take: page_size, relations: ['users'] })
 
-    if (page_size > totalCount) {
-        const allData = await getAllAuthors()
-        return {
-            data: allData,
-            totalCount,
-            totalPages: Math.ceil(totalCount / page_size)
-        }
+    const queryBuilder = await authors.createQueryBuilder("author").skip(skip).take(page_size).leftJoin('author.users', 'users').addSelect(['users.user_id', 'users.email'])
+
+    if(!!search){
+        queryBuilder.where("LOWER(author.name) LIKE LOWER(:search)", { search: `${search}%`})
     }
-
+   
+    const [data, totalCount] = await queryBuilder.getManyAndCount()
+    
     return {
         data,
         totalCount,

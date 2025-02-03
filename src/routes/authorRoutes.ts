@@ -24,11 +24,18 @@ router.get('/:id', verifyID, async (req: Request, res: Response) => {
 })
 
 router.get('/', async (req: Request, res: Response) => {
-    const { page_number, page_size, all } = req.query
+    const { page_number, page_size, all, search } = req.query
+    const convertedStr = search?.toString()
+
+    if(search && (convertedStr.length < 3 || !/^[a-zA-Z]+$/.test(convertedStr))){
+       throw new Error("Search query must contain only alphabetic characters, with at least 3 characters") 
+    }
+
     const pageNumber = /^[0-9]+$/.test(page_number?.toString()) ? Number(page_number) : 1
     const pageSize = /^[0-9]+$/.test(page_size?.toString()) ? Number(page_size) : 10
+
     try {
-        const result = await getAuthorsByPage({ page_number: pageNumber, page_size: pageSize, str: all?.toString() || '' })
+        const result = await getAuthorsByPage({ page_number: pageNumber, page_size: pageSize, str: all?.toString() || '', search: convertedStr || '' })
 
         res.status(200).json(result)
     }
