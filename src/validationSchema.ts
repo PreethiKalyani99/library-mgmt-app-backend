@@ -31,3 +31,7 @@ export const userCreateSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required()
 })
+
+export const idSchema = Joi.object({
+    id: Joi.number().integer().positive().required()
+})

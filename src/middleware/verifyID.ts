@@ -1,17 +1,15 @@
 import { Request, Response, NextFunction } from "express"
+import { idSchema } from "../validationSchema"
 
 export const verifyID = (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params 
-    try{
-        if(!id){
-            throw new Error("ID is required")
-        }
-        if (id && !/^[0-9]+$/.test(id.toString())) {
-            throw new Error(`ID ${id} is invalid`)
+    const { error } = idSchema.validate(req.params)
+    try {
+        if (error) {
+            throw new Error(`${error}`)
         }
         next()
     }
-    catch(error){
+    catch (error) {
         res.status(404).json({ error: error.message })
     }
 }
