@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { insertAuthor, updateAuthor, deleteAuthor, getAuthorsById, getAuthorsByPage } from "../data/authorData";
 import { verifyID } from "../middleware/verifyID";
+import { schema } from "../validationSchema";
 
 interface JwtPayload {
     userId: number
@@ -24,18 +25,16 @@ router.get('/:id', verifyID, async (req: Request, res: Response) => {
 })
 
 router.get('/', async (req: Request, res: Response) => {
-    const { page_number, page_size, all, search } = req.query
-    const convertedStr = search?.toString()
-
-    if(search && (convertedStr.length < 3 || !/^[a-zA-Z]+$/.test(convertedStr))){
-       throw new Error("Search query must contain only alphabetic characters, with at least 3 characters") 
-    }
-
-    const pageNumber = /^[0-9]+$/.test(page_number?.toString()) ? Number(page_number) : 1
-    const pageSize = /^[0-9]+$/.test(page_size?.toString()) ? Number(page_size) : 10
+    const { all, search } = req.query
+    const { error, value } = schema.validate(req.query)
 
     try {
-        const result = await getAuthorsByPage({ page_number: pageNumber, page_size: pageSize, str: all?.toString() || '', search: convertedStr || '' })
+        if(error){
+            throw new Error(`${error}`)
+        }
+        const { page_number, page_size } = value
+        
+        const result = await getAuthorsByPage({ page_number, page_size, str: all?.toString() || '', search: search?.toString() || '' })
 
         res.status(200).json(result)
     }
