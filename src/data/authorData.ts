@@ -21,10 +21,10 @@ interface GetAuthorProps {
 }
 
 interface GetAuthorsByPage {
-    str?: string
+    all: string
     page_number: number
     page_size: number
-    search?: string
+    search: string
 }
 
 const authors = AppDataSource.getRepository(Authors)
@@ -34,7 +34,7 @@ export async function insertAuthor({ name, country, queryRunner, userId }: Autho
 
     const newAuthor = queryRunner.manager.create(Authors, {
         name,
-        country: country || null,
+        country: country,
         created_by: user || null
     })
 
@@ -88,8 +88,8 @@ function getAllAuthors(){
     return authors.createQueryBuilder("author").leftJoin('author.users', 'users').addSelect(['users.user_id', 'users.email']).getMany()
 }
 
-export async function getAuthorsByPage({ page_number, page_size, str, search }: GetAuthorsByPage) {
-    if(str.toLowerCase() === 'all' && search === ''){
+export async function getAuthorsByPage({ page_number, page_size, all, search }: GetAuthorsByPage) {
+    if(all && search === ''){
         return getAllAuthors()
     }
 

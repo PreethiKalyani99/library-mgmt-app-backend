@@ -58,10 +58,6 @@ export async function insertBook({ author, title, published_year, queryRunner, u
     const newBook = new Books()
     newBook.title = title
 
-    if(!author?.id && !author?.name){
-        throw new Error("Either author name or author id is required")
-    }
-
     if (author.id) {
         const authorExists = await isAuthorExists(author.id, null, queryRunner)
 

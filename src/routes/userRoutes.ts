@@ -1,23 +1,24 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { insertUser } from "../data/userData";
+import { userCreateSchema } from "../validationSchema";
 import passport from "passport";
 
 const router = Router()
 
 router.post('/sign-up', async (req: Request, res: Response) => {
-    const { email, password } = req.body
-
+    const { error, value } = userCreateSchema.validate(req.body)
+    
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
-
+    
     await queryRunner.startTransaction()
-
-    if (!email || !password) {
-        throw new Error("Email and Password are required")
-    }
-
+    
     try{
+        if(error){
+            throw new Error(`${error}`)
+        }
+        const { email, password } = value
         const result = await insertUser({ email: email, password: password, queryRunner: queryRunner})
         await queryRunner.commitTransaction()
         res.status(201).json(result)

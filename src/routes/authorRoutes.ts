@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { insertAuthor, updateAuthor, deleteAuthor, getAuthorsById, getAuthorsByPage } from "../data/authorData";
 import { verifyID } from "../middleware/verifyID";
-import { schema } from "../validationSchema";
+import { searchPaginationSchema, authorCreateSchema } from "../validationSchema";
 
 interface JwtPayload {
     userId: number
@@ -25,16 +25,15 @@ router.get('/:id', verifyID, async (req: Request, res: Response) => {
 })
 
 router.get('/', async (req: Request, res: Response) => {
-    const { all, search } = req.query
-    const { error, value } = schema.validate(req.query)
+    const { error, value } = searchPaginationSchema.validate(req.query)
 
     try {
         if(error){
             throw new Error(`${error}`)
         }
-        const { page_number, page_size } = value
+        const { page_number, page_size, search, all } = value
         
-        const result = await getAuthorsByPage({ page_number, page_size, str: all?.toString() || '', search: search?.toString() || '' })
+        const result = await getAuthorsByPage({ page_number, page_size, all, search })
 
         res.status(200).json(result)
     }
@@ -45,15 +44,16 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 router.post('/', async (req: Request, res: Response) => {
-    const { name, country } = req.body
+    const { error, value } = authorCreateSchema.validate(req.body)
+    const { name, country } = value
     const { userId } = req.user as JwtPayload
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
 
     await queryRunner.startTransaction()
     try {
-        if(!name){
-            throw new Error("Author name is required") 
+        if(error){
+            throw new Error(`${error}`) 
         }
         const result = await insertAuthor({ name: name, country: country, queryRunner, userId: userId })
         await queryRunner.commitTransaction()

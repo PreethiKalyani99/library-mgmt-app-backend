@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { insertBook, updateBook, deleteBook, getBookById, getBooksByPage } from "../data/bookData";
 import { verifyID } from "../middleware/verifyID";
+import { searchPaginationSchema, bookCreateSchema } from "../validationSchema";
 
 interface JwtPayload {
     userId: number
@@ -24,12 +25,15 @@ router.get('/:id', verifyID, async (req: Request, res: Response) => {
 })
 
 router.get('/', async (req: Request, res: Response) => {
-    const { page_number, page_size } = req.query 
-    const pageNumber = /^[0-9]+$/.test(page_number?.toString()) ? Number(page_number) : 1
-    const pageSize = /^[0-9]+$/.test(page_size?.toString()) ? Number(page_size) : 10
+    const { error, value } = searchPaginationSchema.validate(req.query)
 
     try{
-        const result = await getBooksByPage({ page_number: pageNumber, page_size: pageSize})
+        if(error){
+            throw new Error(`${error}`)
+        }
+
+        const { page_number, page_size } = value
+        const result = await getBooksByPage({ page_number, page_size })
         res.status(200).json(result)
     }
     catch(error){
@@ -39,19 +43,19 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 router.post('/', async (req: Request, res: Response) => {
-    const { author, title, published_year } = req.body
+    const { error, value } = bookCreateSchema.validate(req.body)
     const { userId } = req.user as JwtPayload
+
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
+
     await queryRunner.startTransaction()
     
     try{
-        if(!title){
-            throw new Error("Title is required")
+        if(error){
+            throw new Error(`${error}`)
         }
-        if (author?.id && !/^[0-9]+$/.test(author.id.toString())) {
-            throw new Error(`ID ${author.id} is invalid`)
-        }
+        const { author, title, published_year } = value
 
         const result = await insertBook({author: author, title: title, published_year: published_year, queryRunner, userId: userId})
         await queryRunner.commitTransaction()
@@ -72,9 +76,12 @@ router.put('/:id', verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
     const { userId } = req.user as JwtPayload
     const { author, title, published_year } = req.body
+
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
+
     await queryRunner.startTransaction()
+
     try{
         const result = await updateBook({ book_id: Number(id), author: author, title: title, published_year: published_year, queryRunner, userId })
         await queryRunner.commitTransaction()
@@ -92,8 +99,10 @@ router.put('/:id', verifyID, async (req: Request, res: Response) => {
 
 router.delete('/:id', verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
+
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
+
     await queryRunner.startTransaction()
 
     try{

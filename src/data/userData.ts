@@ -15,17 +15,15 @@ async function isUserExists(email: string, queryRunner: any){
 export async function insertUser({email, password, queryRunner}: UserProps){
     const user = await isUserExists(email, queryRunner)
 
-    if(!user){
-        const newUser = new Users()
-        newUser.email = email.toLowerCase()
-        newUser.password = password
-
-        await queryRunner.manager.save(newUser)
-        return newUser
-    }
-    else{
+    if(user){
         throw new Error(`User ${email.toLowerCase()} already exists`)
     }
+    const newUser = new Users()
+    newUser.email = email.toLowerCase()
+    newUser.password = password
+
+    await queryRunner.manager.save(newUser)
+    return newUser
 }
 
 export async function getUser({ email, password, queryRunner }: UserProps) {
