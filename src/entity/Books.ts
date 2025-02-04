@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { Authors } from "./Authors";
 import { Users } from "./Users";
+import { BorrowedBooks } from "./BorrowedBooks";
 
 @Entity()
 export class Books{
@@ -20,4 +21,7 @@ export class Books{
     @ManyToOne(() => Users, (user) => user.books, { onDelete: 'SET NULL', nullable: true })
     @JoinColumn({ name: "created_by" })
     users: Users
+
+    @OneToMany(() => BorrowedBooks, (borrowed_book) => borrowed_book.books)
+    borrowedBooks: BorrowedBooks[]
 }
