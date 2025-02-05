@@ -45,16 +45,18 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
     const { error, value } = authorCreateSchema.validate(req.body)
-    const { name, country } = value
     const { userId } = req.user as JwtPayload
+
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
-
+    
     await queryRunner.startTransaction()
+    
     try {
         if(error){
             throw new Error(`${error}`) 
         }
+        const { name, country } = value
         const result = await insertAuthor({ name: name, country: country, queryRunner, userId: userId })
         await queryRunner.commitTransaction()
         res.status(201).json(result)

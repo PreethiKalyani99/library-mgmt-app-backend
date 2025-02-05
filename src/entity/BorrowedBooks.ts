@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import { Books } from "./Books";
-import { Borrowers } from "./Borrowers";
+import { Users } from "./Users";
 
 @Entity()
 export class BorrowedBooks {
@@ -11,9 +11,9 @@ export class BorrowedBooks {
     @JoinColumn({ name: "book_id" })
     books: Books
 
-    @ManyToOne(() => Borrowers, (borrower) => borrower.borrowedBooks)
+    @ManyToOne(() => Users, (user) => user.borrowedBooks)
     @JoinColumn({ name: "borrower_id" })
-    borrowers: Borrowers
+    users: Users
 
     @Column("date")
     borrow_date: Date

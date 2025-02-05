@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, OneToMany } from 
 import { hash } from "bcrypt"
 import { Authors } from "./Authors";
 import { Books } from "./Books";
+import { BorrowedBooks } from "./BorrowedBooks";
 
 @Entity()
 export class Users{
@@ -19,6 +20,9 @@ export class Users{
 
     @OneToMany(() => Books, (book) => book.users)
     books: Books[]
+
+    @OneToMany(() => BorrowedBooks, (borrowed_book) => borrowed_book.users)
+    borrowedBooks: BorrowedBooks[]
 
     @BeforeInsert()
     async hashPassword() {
