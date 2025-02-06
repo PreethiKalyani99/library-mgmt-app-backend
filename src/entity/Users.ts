@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, OneToMany, ManyToOne, JoinColumn } from "typeorm";
 import { hash } from "bcrypt"
 import { Authors } from "./Authors";
 import { Books } from "./Books";
 import { BorrowedBooks } from "./BorrowedBooks";
+import { Roles } from "./Roles";
 
 @Entity()
 export class Users{
@@ -23,6 +24,10 @@ export class Users{
 
     @OneToMany(() => BorrowedBooks, (borrowed_book) => borrowed_book.users)
     borrowedBooks: BorrowedBooks[]
+
+    @ManyToOne(() => Roles, (role) => role.users)
+    @JoinColumn({ name: "role_id"})
+    role: Roles
 
     @BeforeInsert()
     async hashPassword() {

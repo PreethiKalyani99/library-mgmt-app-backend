@@ -69,3 +69,7 @@ export const borrowedBookUpdateSchema = Joi.object({
     .required()
     .error(new Error("Return date must be a valid date (YYYY-MM-DD) and after borrow date"))
 })
+
+export const roleSchema = Joi.object({
+    role: Joi.string().required().error(new Error("Role is required"))
+})
