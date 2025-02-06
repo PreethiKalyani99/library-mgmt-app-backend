@@ -12,7 +12,7 @@ interface InsertProps {
     queryRunner: any
     userId: number
     title: string
-    author?: Author
+    author: Author
     published_year?: number
 }
 
@@ -92,7 +92,7 @@ export async function insertBook({ author, title, published_year, queryRunner, u
 }
 
 export async function updateBook({ book_id, title, author, published_year, queryRunner, userId }: UpdateProps) {
-    const bookToUpdate = await queryRunner.manager.findOne(Books, { where: { book_id: book_id } })
+    const bookToUpdate = await queryRunner.manager.findOne(Books, { where: { book_id } })
 
     if (!bookToUpdate) {
         throw new Error(`Book with id ${book_id} not found`)
@@ -122,7 +122,7 @@ export async function updateBook({ book_id, title, author, published_year, query
         }
 
     }
-    if (published_year && !isNaN(published_year)) {
+    if (published_year) {
         bookToUpdate.published_year = published_year
     }
 
