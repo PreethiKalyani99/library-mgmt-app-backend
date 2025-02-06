@@ -11,7 +11,7 @@ export default passport.use(
     new Strategy({ usernameField: "email"}, async (email, password, done) => {
         try{
             const lowerCaseEmail = email.toLowerCase()
-            const user = await userRepo.findOne({ where: { email: lowerCaseEmail }})
+            const user = await userRepo.findOne({ where: { email: lowerCaseEmail }, relations: ["role"]})
             
             if(!user){
                 throw new Error("User not found")
@@ -24,7 +24,8 @@ export default passport.use(
 
             const userData = {
                 user_id: user.user_id,
-                email: user.email
+                email: user.email,
+                role: user.role.role
             }
 
             const token = jwt.sign(userData, process.env.SECRET_KEY, { expiresIn: "1h" })

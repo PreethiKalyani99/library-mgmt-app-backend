@@ -2,15 +2,16 @@ import { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
 
 interface JwtPayload {
-    user_id: number,
+    user_id: number
     email: string
+    role: string
 }
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
     const { authorization } = req.headers
     try{
         if(!authorization){
-            res.status(401).json({ error: "Unauthorized" })
+            throw new Error("Unauthorized")
         }
         const userInfo = jwt.verify(authorization, process.env.SECRET_KEY) as JwtPayload | null
         if(!userInfo){
@@ -18,7 +19,8 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
         }
         req.user = {
             userId: userInfo.user_id,
-            email: userInfo.email
+            email: userInfo.email,
+            role: userInfo.role
         }
         next()
     }
