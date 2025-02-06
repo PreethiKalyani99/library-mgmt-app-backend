@@ -12,7 +12,7 @@ export class CreateBorrowedBooks1738670628213 implements MigrationInterface {
                 return_date DATE, 
                 CONSTRAINT fk_book_id FOREIGN KEY (book_id) REFERENCES books(book_id), 
                 CONSTRAINT fk_borrower_id FOREIGN KEY (borrower_id) REFERENCES users(user_id),
-                CONSTRAINT date_check CHECK (borrow_date < return_date OR return_date IS NULL)
+                CONSTRAINT date_check CHECK (borrow_date <= return_date OR return_date IS NULL)
             )  
         `)
     }

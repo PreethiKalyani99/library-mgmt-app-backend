@@ -2,7 +2,7 @@ import Joi from "joi"
 
 export const searchPaginationSchema = Joi.object({
     all: Joi.string().insensitive().valid('all').default(''),
-    search: Joi.string().pattern(/^[a-zA-Z]+$/).min(3).default('')
+    search: Joi.string().regex(/^[a-zA-Z]+$/).min(3).default('')
     .messages({
         'string.pattern.base': 'Search must contain only alphabetic characters'
     }),
@@ -34,4 +34,38 @@ export const userCreateSchema = Joi.object({
 
 export const idSchema = Joi.object({
     id: Joi.number().integer().positive().required()
+})
+
+export const userSchema = Joi.object().keys({
+    id: Joi.number().integer().positive(),
+    email: Joi.string().email()
+}).or('id', 'email')
+
+export const bookSchema = Joi.object().keys({
+    id: Joi.number().integer().positive(),
+    title: Joi.string(),
+}).or('id', 'title')
+
+export const borrowedBookCreateSchema = Joi.object({
+    book: bookSchema
+        .required()
+        .error(new Error("Either book id or title is required")),
+    borrower: userSchema
+        .required()
+        .error(new Error("Either borrower id or email is required")),
+    borrow_date: Joi.date()
+        .iso()
+        .required()
+        .error(new Error("Borrow date must be a valid date (YYYY-MM-DD)")),
+    return_date: Joi.date()
+        .iso()
+        .allow(null)
+        .error(new Error("Return date must be a valid date (YYYY-MM-DD) and after borrow date"))
+})
+
+export const borrowedBookUpdateSchema = Joi.object({
+    return_date: Joi.date()
+    .iso()
+    .required()
+    .error(new Error("Return date must be a valid date (YYYY-MM-DD) and after borrow date"))
 })
