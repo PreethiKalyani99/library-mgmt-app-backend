@@ -3,6 +3,8 @@ import { AppDataSource } from "../data-source";
 import { insertBook, updateBook, deleteBook, getBookById, getBooksByPage } from "../data/bookData";
 import { verifyID } from "../middleware/verifyID";
 import { searchPaginationSchema, bookCreateSchema } from "../validationSchema";
+import { authorizeRole } from "../middleware/authorization";
+import { roles } from "../constants/roles";
 
 interface JwtPayload {
     userId: number
@@ -11,7 +13,7 @@ interface JwtPayload {
 
 const router = Router()
 
-router.get('/:id', verifyID, async (req: Request, res: Response) => {
+router.get('/:id', authorizeRole([roles.LIBRARIAN, roles.READER]), verifyID, async (req: Request, res: Response) => {
     const { id } = req.params 
 
     try{
@@ -24,7 +26,7 @@ router.get('/:id', verifyID, async (req: Request, res: Response) => {
     }
 })
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorizeRole([roles.LIBRARIAN, roles.READER]), async (req: Request, res: Response) => {
     const { error, value } = searchPaginationSchema.validate(req.query)
 
     try{
@@ -42,7 +44,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 })
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorizeRole([roles.LIBRARIAN]), async (req: Request, res: Response) => {
     const { error, value } = bookCreateSchema.validate(req.body)
     const { userId } = req.user as JwtPayload
 
@@ -72,7 +74,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 })
 
-router.put('/:id', verifyID, async (req: Request, res: Response) => {
+router.put('/:id', authorizeRole([roles.LIBRARIAN]), verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
     const { userId } = req.user as JwtPayload
     const { author, title, published_year } = req.body
@@ -97,7 +99,7 @@ router.put('/:id', verifyID, async (req: Request, res: Response) => {
     }
 })
 
-router.delete('/:id', verifyID, async (req: Request, res: Response) => {
+router.delete('/:id', authorizeRole([roles.LIBRARIAN]),  verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
 
     const queryRunner = AppDataSource.createQueryRunner()

@@ -3,6 +3,8 @@ import { AppDataSource } from "../data-source";
 import { insertAuthor, updateAuthor, deleteAuthor, getAuthorsById, getAuthorsByPage } from "../data/authorData";
 import { verifyID } from "../middleware/verifyID";
 import { searchPaginationSchema, authorCreateSchema } from "../validationSchema";
+import { authorizeRole } from "../middleware/authorization";
+import { roles } from "../constants/roles";
 
 interface JwtPayload {
     userId: number
@@ -11,7 +13,7 @@ interface JwtPayload {
 
 const router = Router()
 
-router.get('/:id', verifyID, async (req: Request, res: Response) => {
+router.get('/:id', authorizeRole([roles.LIBRARIAN, roles.READER]), verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
     try {
         const result = await getAuthorsById({ author_id: Number(id) })
@@ -23,8 +25,7 @@ router.get('/:id', verifyID, async (req: Request, res: Response) => {
         res.status(404).json({ error: error.message })
     }
 })
-
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorizeRole([roles.LIBRARIAN, roles.READER]), async (req: Request, res: Response) => {
     const { error, value } = searchPaginationSchema.validate(req.query)
 
     try {
@@ -43,7 +44,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 })
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorizeRole([roles.LIBRARIAN]), async (req: Request, res: Response) => {
     const { error, value } = authorCreateSchema.validate(req.body)
     const { userId } = req.user as JwtPayload
 
@@ -71,7 +72,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 })
 
-router.put('/:id', verifyID, async (req: Request, res: Response) => {
+router.put('/:id', authorizeRole([roles.LIBRARIAN]), verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
     const { name, country } = req.body
     const queryRunner = AppDataSource.createQueryRunner()
@@ -94,7 +95,7 @@ router.put('/:id', verifyID, async (req: Request, res: Response) => {
     }
 })
 
-router.delete('/:id', verifyID, async (req: Request, res: Response) => {
+router.delete('/:id', authorizeRole([roles.LIBRARIAN]), verifyID, async (req: Request, res: Response) => {
     const { id } = req.params
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
