@@ -92,12 +92,12 @@ export async function updateBorrowedBook({ id, return_date, queryRunner }: Updat
 
 const borrowedBooks = AppDataSource.getRepository(BorrowedBooks)
 
-export async function getBorrowedBookByID(id: number){
-    const borrowedBook = await borrowedBooks.findOne({ where: { id }, relations: ['books', 'users']})
-    if(!borrowedBook){
+export async function getBorrowerBookById(id: number){
+    const borrowedBooksList = await borrowedBooks.find({ where: { users: { user_id: id } }, relations: ['books']})
+    if(!borrowedBooksList){
         throw new Error(`ID ${id} not found`)
     }
-    return borrowedBook
+    return borrowedBooksList
 }
 
 interface GetBorrowedBooksByPage {
