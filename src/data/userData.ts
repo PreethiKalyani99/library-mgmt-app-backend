@@ -6,6 +6,7 @@ interface UserProps{
     email: string
     password: string
     queryRunner:any
+    role: string
 }
 
 async function isUserExists(email: string, queryRunner: any){
@@ -13,19 +14,23 @@ async function isUserExists(email: string, queryRunner: any){
     return await queryRunner.manager.findOne(Users, { where: { email: lowerCaseEmail }})
 }
 
-export async function insertUser({email, password, queryRunner}: UserProps){
+export async function insertUser({email, password, queryRunner, role}: UserProps){
     const user = await isUserExists(email, queryRunner)
     
     if(user){
         throw new Error(`User ${email.toLowerCase()} already exists`)
     }
-    const role = await  queryRunner.manager.findOne(Roles, { where: { role: 'reader' }})
+    const roleExist = await  queryRunner.manager.findOne(Roles, { where: { role }})
+
+    if(!roleExist){
+        throw new Error(`Role ${role} does not exist`)
+    }
 
     const newUser = new Users()
     
     newUser.email = email.toLowerCase()
     newUser.password = password
-    newUser.role = role
+    newUser.role = roleExist
 
     await queryRunner.manager.save(newUser)
     return newUser
