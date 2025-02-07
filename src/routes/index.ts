@@ -15,6 +15,5 @@ router.use('/books', verifyToken,  bookRoutes)
 router.use('/users', userRoutes)
 router.use('/borrow', verifyToken, borrowedBooksRoutes)
 router.use('/role', verifyToken, authorizeRole([]), roleRoutes)
-router.use('/users/admin', verifyToken, authorizeRole([]), userRoutes)
 
 export default router

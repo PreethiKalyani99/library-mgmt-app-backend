@@ -27,15 +27,17 @@ export const bookCreateSchema = Joi.object({
     author: authorSchema.required().error(new Error("Either author name or id is required")),
 })
 
-export const adminUserCreateSchema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(8).required(),
-    role: Joi.string().required() 
-})
-
 export const userCreateSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
+})
+
+export const userUpdateSchema = Joi.object({
+    role: Joi.string().required() 
+})
+
+export const adminUserCreateSchema = userCreateSchema.append({
+    role: Joi.string().required(),
 })
 
 export const idSchema = Joi.object({
