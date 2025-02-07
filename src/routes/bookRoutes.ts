@@ -13,7 +13,7 @@ interface JwtPayload {
 
 const router = Router()
 
-router.get('/:id', authorizeRole([roles.LIBRARIAN, roles.READER]), verifyID, async (req: Request, res: Response) => {
+router.get('/:id', authorizeRole([roles.LIBRARIAN, roles.READER, roles.RECEPTIONIST]), verifyID, async (req: Request, res: Response) => {
     const { id } = req.params 
 
     try{
@@ -26,7 +26,7 @@ router.get('/:id', authorizeRole([roles.LIBRARIAN, roles.READER]), verifyID, asy
     }
 })
 
-router.get('/', authorizeRole([roles.LIBRARIAN, roles.READER]), async (req: Request, res: Response) => {
+router.get('/', authorizeRole([roles.LIBRARIAN, roles.READER, roles.RECEPTIONIST]), async (req: Request, res: Response) => {
     const { error, value } = searchPaginationSchema.validate(req.query)
 
     try{
