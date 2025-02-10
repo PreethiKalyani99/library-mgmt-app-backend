@@ -34,8 +34,8 @@ router.get('/', authorizeRole([roles.LIBRARIAN, roles.READER, roles.RECEPTIONIST
             throw new Error(`${error}`)
         }
 
-        const { page_number, page_size } = value
-        const result = await getBooksByPage({ page_number, page_size })
+        const { page_number, page_size, search } = value
+        const result = await getBooksByPage({ page_number, page_size, search }) 
         res.status(200).json(result)
     }
     catch(error){

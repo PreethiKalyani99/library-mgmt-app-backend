@@ -2,9 +2,9 @@ import Joi from "joi"
 
 export const searchPaginationSchema = Joi.object({
     all: Joi.string().insensitive().valid('all').default(''),
-    search: Joi.string().regex(/^[a-zA-Z]+$/).min(3).default('')
+    search: Joi.string().regex(/^[a-zA-Z0-9@.]+$/).min(3).default('')
     .messages({
-        'string.pattern.base': 'Search must contain only alphabetic characters'
+        'string.pattern.base': 'Search must contain only alphanumeric characters, @, and .'
     }),
     page_number: Joi.number().integer().default(1),
     page_size: Joi.number().integer().default(10),

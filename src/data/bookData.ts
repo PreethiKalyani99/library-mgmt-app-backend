@@ -32,6 +32,7 @@ interface GetBookById {
 interface GetBooksByPage {
     page_number: number
     page_size: number
+    search: string
 }
 
 const books = AppDataSource.getRepository(Books)
@@ -152,19 +153,25 @@ export async function getBookById({ book_id }: GetBookById) {
     }
 }
 
-export async function getBooksByPage({ page_number, page_size }: GetBooksByPage){
+export async function getBooksByPage({ page_number, page_size, search }: GetBooksByPage){
     const skip = (page_number - 1) * page_size
-    const [data, totalCount] = await books.findAndCount({ skip, take: page_size, relations:['author'] })
 
-    if (page_size > totalCount) {
-        const allData = await books.find({relations: ['author']})
-        return {
-            data: allData,
-            totalCount,
-            totalPages: Math.ceil(totalCount / page_size),
-            currentPage: page_number
-        }
+    const queryBuilder = books.createQueryBuilder("book")
+        .skip(skip)
+        .take(page_size)
+        .leftJoinAndSelect('book.author', "author")
+        .leftJoin('book.users', 'users')
+        .addSelect(['users.user_id', 'users.email'])
+
+    if(!!search){
+        queryBuilder
+            .where("LOWER(book.title) LIKE LOWER(:search)", { search: `${search}%`})
+            .orWhere("LOWER(author.name) LIKE LOWER(:search)", { search: `${search}%` })
+            .orWhere("book.published_year::text LIKE :search", { search: `${search}%` })
+            .orWhere("users.email LIKE LOWER(:search)", { search: `${search}%` })
     }
+
+    const [data, totalCount] = await queryBuilder.getManyAndCount()
 
     return {
         data,
