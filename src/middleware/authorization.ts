@@ -25,7 +25,7 @@ export const authorizeRole = (allowedRoles: string[]) => {
                 throw new Error("Forbidden: You do not have permission to access this resource.")
             }
 
-            if(role.toLowerCase() === 'reader' && userId !== Number(id)){
+            if(req.baseUrl === '/borrow' && role.toLowerCase() === 'reader' && userId !== Number(id)){
                 throw new Error("Forbidden: You do not have permission to access this resource.")
             }
             next()
