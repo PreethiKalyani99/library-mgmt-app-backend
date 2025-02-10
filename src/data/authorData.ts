@@ -95,10 +95,15 @@ export async function getAuthorsByPage({ page_number, page_size, all, search }: 
 
     const skip = (page_number - 1) * page_size
 
-    const queryBuilder = authors.createQueryBuilder("author").skip(skip).take(page_size).leftJoin('author.users', 'users').addSelect(['users.user_id', 'users.email'])
+    const queryBuilder = authors.createQueryBuilder("author")
+        .skip(skip)
+        .take(page_size)
+        .leftJoin('author.users', 'users')
+        .addSelect(['users.user_id', 'users.email'])
 
     if(!!search){
-        queryBuilder.where("LOWER(author.name) LIKE LOWER(:search)", { search: `${search}%`})
+        queryBuilder
+            .where("LOWER(author.name) LIKE LOWER(:search) OR LOWER(author.country) LIKE LOWER(:search)", { search: `${search}%`})
     }
    
     const [data, totalCount] = await queryBuilder.getManyAndCount()

@@ -118,7 +118,7 @@ export async function getBorrowedBooksByPage({ page_number, page_size, search }:
 
     if(search){
         queryBuilder.where(
-            "LOWER(books.title) LIKE LOWER(:search) OR LOWER(users.email) LIKE LOWER(:search)", { search: `%${search}%` }
+            "LOWER(books.title) LIKE LOWER(:search) OR users.email LIKE LOWER(:search)", { search: `%${search}%` }
         )
     }
 
