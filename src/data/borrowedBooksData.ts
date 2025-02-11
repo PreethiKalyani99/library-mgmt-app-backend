@@ -92,21 +92,14 @@ export async function updateBorrowedBook({ id, return_date, queryRunner }: Updat
 
 const borrowedBooks = AppDataSource.getRepository(BorrowedBooks)
 
-export async function getBorrowerBookById(id: number){
-    const borrowedBooksList = await borrowedBooks.find({ where: { users: { user_id: id } }, relations: ['books']})
-    if(!borrowedBooksList){
-        throw new Error(`ID ${id} not found`)
-    }
-    return borrowedBooksList
-}
-
 interface GetBorrowedBooksByPage {
     page_number: number
     page_size: number
     search: string
+    id?: number
 }
 
-export async function getBorrowedBooksByPage({ page_number, page_size, search }:GetBorrowedBooksByPage){
+export async function getBorrowedBooksByPage({ id, page_number, page_size, search }:GetBorrowedBooksByPage){
     const skip = (page_number - 1) * page_size
 
     const queryBuilder = borrowedBooks.createQueryBuilder('borrowedBooks')
@@ -116,8 +109,12 @@ export async function getBorrowedBooksByPage({ page_number, page_size, search }:
         .leftJoin('borrowedBooks.users', 'users')
         .addSelect(['users.user_id', 'users.email'])
 
+    if (id) {
+        queryBuilder.where('users.user_id = :id', { id });
+    }
+    
     if(search){
-        queryBuilder.where(
+        queryBuilder.andWhere(
             "LOWER(books.title) LIKE LOWER(:search) OR users.email LIKE LOWER(:search)", { search: `%${search}%` }
         )
     }

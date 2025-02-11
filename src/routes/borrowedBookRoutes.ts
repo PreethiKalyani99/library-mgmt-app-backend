@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { borrowedBookCreateSchema, borrowedBookUpdateSchema, searchPaginationSchema } from "../validationSchema";
-import { insertBorrowedBook, updateBorrowedBook, getBorrowerBookById, getBorrowedBooksByPage } from "../data/borrowedBooksData";
+import { insertBorrowedBook, updateBorrowedBook, getBorrowedBooksByPage } from "../data/borrowedBooksData";
 import { verifyID } from "../middleware/verifyID";
 import { authorizeRole } from "../middleware/authorization";
 import { roles } from "../constants/roles";
@@ -36,9 +36,16 @@ router.post('/', authorizeRole([roles.LIBRARIAN, roles.RECEPTIONIST]), async (re
 })
 
 router.get('/:id', authorizeRole([roles.LIBRARIAN, roles.READER, roles.RECEPTIONIST]), verifyID, async (req: Request, res: Response) => {
+    const { error, value } = searchPaginationSchema.validate(req.query)
     const { id } = req.params
+
     try {
-        const result = await getBorrowerBookById(Number(id))
+        if(error){
+            throw new Error(`${error}`)
+        }
+        const { page_number, page_size, search } = value
+
+        const result = await getBorrowedBooksByPage({ id: Number(id), page_number, page_size, search })
         res.status(200).json(result)
     }
     catch (error) {
