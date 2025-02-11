@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
-import { insertUser, updateUser } from "../data/userData";
-import { userCreateSchema, adminUserCreateSchema, userUpdateSchema } from "../validationSchema";
+import { insertUser, updateUser, getUsersByPage } from "../data/userData";
+import { userCreateSchema, adminUserCreateSchema, userUpdateSchema, searchPaginationSchema } from "../validationSchema";
 import passport from "passport";
 import { verifyToken } from "../middleware/verifyToken";
 import { authorizeRole } from "../middleware/authorization";
@@ -41,11 +41,11 @@ router.post('/sign-up', async (req: Request, res: Response) => {
     createUser(req, res, userCreateSchema)
 })
 
-router.post('/admin', verifyToken, authorizeRole([]), async (req: Request, res: Response) => {
+router.post('/', verifyToken, authorizeRole([]), async (req: Request, res: Response) => {
     createUser(req, res, adminUserCreateSchema)
 })
 
-router.put('/admin/:id', verifyToken, verifyID, authorizeRole([]), async(req: Request, res: Response) => {
+router.put('/:id', verifyToken, verifyID, authorizeRole([]), async(req: Request, res: Response) => {
     const { id } = req.params
     const { error, value } = userUpdateSchema.validate(req.body)
     
@@ -71,6 +71,25 @@ router.put('/admin/:id', verifyToken, verifyID, authorizeRole([]), async(req: Re
     finally{
         await queryRunner.release()
     }
+})
+
+router.get('/', verifyToken, authorizeRole([]), async (req: Request, res: Response) => {
+     const { error, value } = searchPaginationSchema.validate(req.query)
+    
+        try {
+            if(error){
+                throw new Error(`${error}`)
+            }
+            const { page_number, page_size, search } = value
+            
+            const result = await getUsersByPage({ page_number, page_size, search })
+    
+            res.status(200).json(result)
+        }
+        catch (error) {
+            console.error('Error:', error.message)
+            res.status(404).json({ error: error.message })
+        }
 })
 
 router.post('/login', passport.authenticate('local', { session: false }),  

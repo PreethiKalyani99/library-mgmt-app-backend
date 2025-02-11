@@ -1,6 +1,7 @@
 import { Users } from "../entity/Users";
 import { Roles } from "../entity/Roles";
 import { compare } from "bcrypt";
+import { AppDataSource } from "../data-source";
 
 interface UserProps{
     email: string
@@ -14,6 +15,8 @@ interface UserExistProp {
     id?: number
     email?: string
 }
+
+const users = AppDataSource.getRepository(Users)
 
 async function isUserExists({ id, email, queryRunner }: UserExistProp){
     if(email){
@@ -51,7 +54,7 @@ export async function getUser({ email, password, queryRunner }: UserProps) {
     const user = await isUserExists({ email, queryRunner })
 
     if(!user){
-        throw new Error(`User with email ${email} does not exist`)
+        throw new Error(`User with email ${email} does not exist`) 
     }
 
     const isPasswordMatch = await compare(password, user.password)
@@ -79,4 +82,34 @@ export async function updateUser({ id, role, queryRunner }: UpdateUserProp) {
     user.role = roleExist
     queryRunner.manager.save(user)
     return user
+}
+
+interface GetUsersByPageProp {
+    page_number: number
+    page_size: number
+    search: string
+}
+
+export async function getUsersByPage({ page_number, page_size, search }: GetUsersByPageProp){
+    const skip = (page_number - 1) * page_size
+
+    const queryBuilder = users.createQueryBuilder('user')
+        .skip(skip)
+        .take(page_size)
+        .select(['user.user_id', 'user.email'])
+
+    if(search){
+        queryBuilder.where(
+            "user.email LIKE LOWER(:search)", { search: `%${search}%` }
+        )
+    }
+
+    const [data, totalCount] = await queryBuilder.getManyAndCount()
+    
+    return {
+        data,
+        totalCount,
+        totalPages: Math.ceil(totalCount / page_size),
+        currentPage: page_number
+    }
 }
