@@ -1,4 +1,5 @@
 import { Roles } from "../entity/Roles";
+import { AppDataSource } from "../data-source";
 
 interface RoleProp {
     role: string
@@ -22,4 +23,10 @@ export async function createRole({ role, queryRunner }: RoleProp){
     
     await queryRunner.manager.save(newRole)
     return newRole
+}
+
+const role = AppDataSource.getRepository(Roles)
+
+export function getRoles(){
+    return role.find()
 }

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { roleSchema } from "../validationSchema";
-import { createRole } from "../data/createRoles";
+import { createRole, getRoles } from "../data/roleData";
 
 const router = Router()
 
@@ -29,4 +29,13 @@ router.post('/', async (req: Request, res: Response) => {
     }
 })
 
+router.get('/', async (req: Request, res: Response) => {
+    try {
+        const result = await getRoles()
+        res.status(200).json(result)
+    }
+    catch(error){
+        res.status(404).json({ error: error.message })
+    }
+})
 export default router

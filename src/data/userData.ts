@@ -97,6 +97,8 @@ export async function getUsersByPage({ page_number, page_size, search }: GetUser
         .skip(skip)
         .take(page_size)
         .select(['user.user_id', 'user.email'])
+        .leftJoin('user.role', 'role')
+        .addSelect(['role.role'])
 
     if(search){
         queryBuilder.where(
