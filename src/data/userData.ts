@@ -102,7 +102,7 @@ export async function getUsersByPage({ page_number, page_size, search }: GetUser
 
     if(search){
         queryBuilder.where(
-            "user.email LIKE LOWER(:search)", { search: `%${search}%` }
+            "LOWER(role.role) LIKE LOWER(:search) OR user.email LIKE LOWER(:search)", { search: `%${search}%` } 
         )
     }
 
