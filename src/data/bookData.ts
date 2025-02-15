@@ -1,4 +1,5 @@
 import { Books } from "../entity/Books";
+import { BorrowedBooks } from "../entity/BorrowedBooks";
 import { Authors } from "../entity/Authors";
 import { Users } from "../entity/Users";
 import { insertAuthor } from "./authorData";
@@ -132,12 +133,28 @@ export async function updateBook({ book_id, title, author, published_year, query
 }
 
 export async function deleteBook(book_id: number, queryRunner: any) {
-    const bookToDelete = await queryRunner.manager.findOne(Books, { where: { book_id } })
+    const bookToDelete = await queryRunner.manager.findOne(Books, { 
+        where: [
+            { book_id, is_deleted: false}, 
+            { book_id, is_deleted: null }
+        ],
+        relations: ["borrowedBooks"]
+    })
 
     if (!bookToDelete) {
         throw new Error(`Book with id ${book_id} not found`)
     }
-    await queryRunner.manager.remove(bookToDelete)
+
+    bookToDelete.is_deleted = true
+
+    if (bookToDelete.borrowedBooks.length > 0) {
+        for (const borrowedBook of bookToDelete.borrowedBooks) {
+            borrowedBook.is_deleted = true
+        }
+        await queryRunner.manager.save(BorrowedBooks, bookToDelete.borrowedBooks)
+    }
+
+    await queryRunner.manager.save(bookToDelete)
 
     return bookToDelete
 }
@@ -162,6 +179,7 @@ export async function getBooksByPage({ page_number, page_size, search }: GetBook
         .leftJoinAndSelect('book.author', "author")
         .leftJoin('book.users', 'users')
         .addSelect(['users.user_id', 'users.email'])
+        .where('book.is_deleted IS NULL OR book.is_deleted = false')
 
     if(!!search){
         queryBuilder

@@ -20,4 +20,7 @@ export class BorrowedBooks {
 
     @Column("date", { nullable: true })
     return_date: Date | null
+
+    @Column()
+    is_deleted: boolean | null
 }

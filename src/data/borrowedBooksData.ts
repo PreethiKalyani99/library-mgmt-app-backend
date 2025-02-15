@@ -108,6 +108,7 @@ export async function getBorrowedBooksByPage({ id, page_number, page_size, searc
         .leftJoinAndSelect('borrowedBooks.books', 'books')
         .leftJoin('borrowedBooks.users', 'users')
         .addSelect(['users.user_id', 'users.email'])
+        .where('borrowedBooks.is_deleted IS NULL OR borrowedBooks.is_deleted = false')
 
     if (id) {
         queryBuilder.where('users.user_id = :id', { id });

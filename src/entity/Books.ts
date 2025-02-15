@@ -24,4 +24,7 @@ export class Books{
 
     @OneToMany(() => BorrowedBooks, (borrowed_book) => borrowed_book.books)
     borrowedBooks: BorrowedBooks[]
+
+    @Column()
+    is_deleted: boolean | null
 }
