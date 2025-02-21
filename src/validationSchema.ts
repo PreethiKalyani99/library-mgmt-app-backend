@@ -81,3 +81,23 @@ export const borrowedBookUpdateSchema = Joi.object({
 export const roleSchema = Joi.object({
     role: Joi.string().required().error(new Error("Role is required"))
 })
+
+export const addressSchema = Joi.object({
+    houseNumber: Joi.string()
+        .pattern(/^\d+(\/\d+)?$/)
+        .allow(null),
+    street: Joi.string()
+        .pattern(/^[a-zA-Z0-9\s\-,.]+$/)
+        .allow(null),
+    area: Joi.string()
+        .allow(null),
+    city: Joi.string()
+        .pattern(/^[a-zA-Z]+$/)
+        .allow(null),
+    country: Joi.string()
+        .pattern(/^[a-zA-Z]+$/)
+        .allow(null),
+    pincode: Joi.string()
+        .pattern(/^\d+$/)
+        .allow(null)
+})
