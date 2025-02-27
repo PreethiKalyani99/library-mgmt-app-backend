@@ -6,6 +6,7 @@ import userRoutes from "../routes/userRoutes"
 import borrowedBooksRoutes from "../routes/borrowedBookRoutes"
 import mapRoutes from "../routes/mapRoutes"
 import roleRoutes from "../routes/roleRoute"
+import scrapeRoute from "../routes/scrapeRoute"
 import { authorizeRole } from "../middleware/authorization"
 import "../strategy/localStrategy"
 
@@ -17,5 +18,6 @@ router.use('/users', userRoutes)
 router.use('/borrow', verifyToken, borrowedBooksRoutes)
 router.use('/roles', verifyToken, authorizeRole([]), roleRoutes)
 router.use('/map', mapRoutes)
+router.use('/news', scrapeRoute)
 
 export default router
