@@ -37,7 +37,6 @@
       "typeorm": "typeorm-ts-node-esm",
       "migration:run": "typeorm-ts-node-commonjs migration:run -t each -d ./src/data-source.ts",
       "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./src/data-source.ts",
-      "predeploy": "npm run migration:run && npm run build",
-      "build": "tsc"
+      "predeploy": "npm run migration:run && npm run build"
    }
 }
