@@ -18,7 +18,7 @@ app.use(routes)
 
 AppDataSource.initialize().then(async () => {
     app.listen(port, () => {
-        console.log(`Server is running at http://dpg-cuu1q5d6l47c73aaj0jg-a:${port}`)
+        console.log(`Server is running at http://dpg-cv4n94gfnakc73bqc5lg-a:${port}`)
     })
     
 }).catch(error => console.log(error))   
