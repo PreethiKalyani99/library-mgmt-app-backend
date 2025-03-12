@@ -5,6 +5,7 @@
          "es2020",
          "dom"
       ],
+      "types": ["node", "jest"],
       "target": "es2020",
       "module": "commonjs",
       "esModuleInterop": true,

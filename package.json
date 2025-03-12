@@ -1,5 +1,5 @@
 {
-   "name": "myproject", 
+   "name": "myproject",
    "version": "0.0.1",
    "description": "Awesome project developed with TypeORM.",
    "type": "commonjs",
@@ -7,17 +7,22 @@
       "@types/bcrypt": "^5.0.2",
       "@types/cors": "^2.8.17",
       "@types/express": "^5.0.0",
+      "@types/jest": "^29.5.14",
       "@types/jsonwebtoken": "^9.0.8",
-      "@types/node": "^16.11.10",
+      "@types/node": "^16.18.126",
       "@types/node-fetch": "^2.6.12",
       "@types/passport": "^1.0.17",
       "@types/passport-local": "^1.0.38",
+      "@types/supertest": "^6.0.2",
+      "jest": "^29.7.0",
+      "ts-jest": "^29.2.6",
       "ts-node": "^10.9.1",
-      "typescript": "4.5.2"
+      "typescript": "^5.3.3"
    },
    "dependencies": {
       "bcrypt": "^5.1.1",
       "cors": "^2.8.5",
+      "cross-env": "^7.0.3",
       "dotenv": "^16.4.7",
       "express": "^4.21.2",
       "joi": "^17.13.3",
@@ -30,13 +35,15 @@
       "puppeteer-extra": "^3.3.6",
       "puppeteer-extra-plugin-stealth": "^2.11.2",
       "reflect-metadata": "^0.1.13",
+      "supertest": "^7.0.0",
       "typeorm": "0.3.20"
    },
    "scripts": {
-      "start": "ts-node src/index.ts",
+      "start": "ts-node src/server.ts",
       "typeorm": "typeorm-ts-node-esm",
       "migration:run": "typeorm-ts-node-commonjs migration:run -t each -d ./src/data-source.ts",
       "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./src/data-source.ts",
-      "predeploy": "npm run migration:run && npm run build"
+      "predeploy": "npm run migration:run && npm run build",
+      "test": "cross-env NODE_ENV=test jest --config jest.config.ts --testTimeout=40000"
    }
 }
