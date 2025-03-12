@@ -21,7 +21,6 @@ jest.mock("../../middleware/authorization", () => ({
     ),
 }))
 
-
 beforeAll(async () => {
     await AppDataSource.initialize()
 })
@@ -31,9 +30,9 @@ afterAll(async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000))
 })
 
-const author = { name: "Kalki", country: "India" }
 
 test("should create a new author", async () => {
+    const author = { name: "Kalki", country: "India" };
     (insertAuthor as jest.Mock).mockResolvedValue(author)
 
     const response = await request(app)
@@ -43,4 +42,17 @@ test("should create a new author", async () => {
 
     expect(response.status).toBe(201)
     expect(response.body).toEqual(author)
+})
+
+test("should return error if author name is missing", async () => {
+    const author = { country: "India" };
+    (insertAuthor as jest.Mock).mockResolvedValue(author)
+
+    const response = await request(app)
+        .post("/authors")
+        .set("Authorization", "mock token")
+        .send(author)
+
+    expect(response.status).toBe(404)
+    expect(response.body.error).toContain("Author name is required")
 })
