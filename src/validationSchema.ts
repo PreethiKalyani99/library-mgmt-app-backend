@@ -1,7 +1,7 @@
 import Joi from "joi"
 
 export const searchPaginationSchema = Joi.object({
-    all: Joi.string().insensitive().valid('all').default(''),
+    all: Joi.boolean().default(false),
     search: Joi.string().regex(/^[a-zA-Z0-9@.]+$/).min(3).default('')
     .messages({
         'string.pattern.base': 'Search must contain only alphanumeric characters, @, and .'
@@ -11,7 +11,7 @@ export const searchPaginationSchema = Joi.object({
 })
 
 export const authorCreateSchema = Joi.object({
-    name: Joi.string().required().error(new Error("Author name is required")),
+    name: Joi.string().min(1).required().error(new Error("Author name is required")),
     country: Joi.string().default(null),
 })
 

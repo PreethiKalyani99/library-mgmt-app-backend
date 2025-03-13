@@ -21,17 +21,15 @@ interface GetAuthorProps {
 }
 
 interface GetAuthorsByPage {
-    all: string
+    all: boolean
     page_number: number
     page_size: number
     search: string
 }
 
-const authors = AppDataSource.getRepository(Authors)
-
 export async function insertAuthor({ name, country, queryRunner, userId }: AuthorData) {
     const user = await queryRunner.manager.findOne(Users, { where: { user_id: userId }})
-
+    
     const newAuthor = queryRunner.manager.create(Authors, {
         name,
         country: country,
@@ -75,6 +73,8 @@ export async function deleteAuthor(author_id: number, queryRunner: any) {
 }
 
 export async function getAuthorsById({ author_id }: GetAuthorProps) {
+    const authors = AppDataSource.getRepository(Authors)
+
     const author = await authors.findOne({ where: { author_id }, relations: ['users'] })
     if (author) {
         return author
@@ -85,6 +85,8 @@ export async function getAuthorsById({ author_id }: GetAuthorProps) {
 }
 
 function getAllAuthors(){
+    const authors = AppDataSource.getRepository(Authors)
+
     return authors.createQueryBuilder("author").leftJoin('author.users', 'users').addSelect(['users.user_id', 'users.email']).getMany()
 }
 
@@ -92,6 +94,8 @@ export async function getAuthorsByPage({ page_number, page_size, all, search }: 
     if(all && search === ''){
         return getAllAuthors()
     }
+
+    const authors = AppDataSource.getRepository(Authors)
 
     const skip = (page_number - 1) * page_size
 
