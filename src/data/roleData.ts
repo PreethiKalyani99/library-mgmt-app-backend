@@ -25,8 +25,9 @@ export async function createRole({ role, queryRunner }: RoleProp){
     return newRole
 }
 
-const role = AppDataSource.getRepository(Roles)
 
 export function getRoles(){
+    const role = AppDataSource.getRepository(Roles)
+    
     return role.find()
 }
