@@ -8,9 +8,9 @@ interface JwtPayload {
     email: string
 }
 
-const rolesRepo = AppDataSource.getRepository(Roles)
-
 export const authorizeRole = (allowedRoles: string[]) => {
+    const rolesRepo = AppDataSource.getRepository(Roles)
+
     return async (req: Request, res: Response, next: NextFunction) => {
         const { role, userId } = req.user as JwtPayload
         const { id } = req.params
