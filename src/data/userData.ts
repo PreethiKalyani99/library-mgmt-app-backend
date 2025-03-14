@@ -16,8 +16,6 @@ interface UserExistProp {
     email?: string
 }
 
-const users = AppDataSource.getRepository(Users)
-
 async function isUserExists({ id, email, queryRunner }: UserExistProp){
     if(email){
         const lowerCaseEmail = email.toLowerCase()
@@ -30,7 +28,6 @@ async function isUserExists({ id, email, queryRunner }: UserExistProp){
 
 export async function insertUser({email, password, queryRunner, role}: UserProps){
     const user = await isUserExists({ email, queryRunner })
-    
     if(user){
         throw new Error(`User ${email.toLowerCase()} already exists`)
     }
@@ -50,7 +47,13 @@ export async function insertUser({email, password, queryRunner, role}: UserProps
     return newUser
 }
 
-export async function getUser({ email, password, queryRunner }: UserProps) {
+interface GetUserProp {
+    email: string
+    password: string
+    queryRunner: any
+}
+
+export async function getUser({ email, password, queryRunner }: GetUserProp) {
     const user = await isUserExists({ email, queryRunner })
 
     if(!user){
@@ -73,10 +76,15 @@ interface UpdateUserProp {
 
 export async function updateUser({ id, role, queryRunner }: UpdateUserProp) {
     const user = await isUserExists({ id, queryRunner })
-    const roleExist = await  queryRunner.manager.findOne(Roles, { where: { role }})
-
+    
     if(!user){
         throw new Error(`User with ID ${id} does not exist`)
+    }
+
+    const roleExist = await  queryRunner.manager.findOne(Roles, { where: { role }})
+
+    if(!roleExist){
+        throw new Error(`Role ${role} does not exist`)
     }
 
     user.role = roleExist
@@ -91,6 +99,7 @@ interface GetUsersByPageProp {
 }
 
 export async function getUsersByPage({ page_number, page_size, search }: GetUsersByPageProp){
+    const users = AppDataSource.getRepository(Users)
     const skip = (page_number - 1) * page_size
 
     const queryBuilder = users.createQueryBuilder('user')

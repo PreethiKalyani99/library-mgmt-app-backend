@@ -5,8 +5,6 @@ const queryRunner = {
     manager: {
         findOne: jest.fn(),
         save: jest.fn(),
-        create: jest.fn(),
-        remove: jest.fn(),
         createQueryBuilder: jest.fn()
     }
 }
