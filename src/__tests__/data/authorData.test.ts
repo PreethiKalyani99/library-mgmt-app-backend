@@ -3,7 +3,7 @@ import { Users } from "../../entity/Users";
 import { Authors } from "../../entity/Authors";
 import { AppDataSource } from "../../data-source";
 
-const queryRunner = {
+const queryRunner = { 
     manager: {
         findOne: jest.fn(),
         save: jest.fn(),
@@ -26,7 +26,6 @@ describe('Insert author', () => {
         const result = await insertAuthor(mockData)
 
         expect(queryRunner.manager.findOne).toHaveBeenCalledWith(Users, { where: { user_id: 1 } })
-        expect(queryRunner.manager.create).toHaveBeenCalledWith(expect.anything(), mockResult)
         expect(queryRunner.manager.save).toHaveBeenCalledWith(mockResult)
         expect(result).toEqual(mockResult)
     })

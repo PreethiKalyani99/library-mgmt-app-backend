@@ -36,9 +36,7 @@ interface GetBooksByPage {
     search: string
 }
 
-const books = AppDataSource.getRepository(Books)
-
-async function isAuthorExists(author_id: number | null, name: string | null, queryRunner: any) {
+export async function isAuthorExists(author_id: number | null, name: string | null, queryRunner: any) {
     if(author_id){
         const author = await queryRunner.manager.findOne(Authors, { where: { author_id } })
         if (author) {
@@ -64,12 +62,12 @@ export async function insertBook({ author, title, published_year, queryRunner, u
         const authorExists = await isAuthorExists(author.id, null, queryRunner)
 
         if (!authorExists) {
-            throw new Error(`Author id ${author.id} not found`)
+            throw new Error(`Author with id ${author.id} not found`)
         }
         newBook.author = authorExists
     }
 
-    if(author.name){
+    if(!author.id && author.name){
         const authorExists = await isAuthorExists(null, author.name, queryRunner)
         if(authorExists){
             newBook.author = authorExists
@@ -113,7 +111,7 @@ export async function updateBook({ book_id, title, author, published_year, query
         bookToUpdate.author = authorExists
     }
 
-    if(author?.name){
+    if(!author?.id && author?.name){
         const authorExists = await isAuthorExists(null, author.name, queryRunner)
         if(!authorExists){
             const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner, userId})
@@ -160,6 +158,8 @@ export async function deleteBook(book_id: number, queryRunner: any) {
 }
 
 export async function getBookById({ book_id }: GetBookById) {
+    const books = AppDataSource.getRepository(Books)
+
     const book = await books.findOne({ where: { book_id }, relations: ['author'] })
 
     if (book) {
@@ -172,6 +172,7 @@ export async function getBookById({ book_id }: GetBookById) {
 
 export async function getBooksByPage({ page_number, page_size, search }: GetBooksByPage){
     const skip = (page_number - 1) * page_size
+    const books = AppDataSource.getRepository(Books)
 
     const queryBuilder = books.createQueryBuilder("book")
         .skip(skip)
