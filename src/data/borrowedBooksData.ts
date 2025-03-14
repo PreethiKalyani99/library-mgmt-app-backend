@@ -29,7 +29,7 @@ interface EntityProp {
     email?: string
 }
 
-async function checkEntityExists({ id, title, email, queryRunner, entity }: EntityProp){
+export async function checkEntityExists({ id, title, email, queryRunner, entity }: EntityProp){
     if(entity === 'book'){
         if(id){
             return await queryRunner.manager.findOne(Books, { where: { book_id: id }}) 
@@ -50,7 +50,7 @@ async function checkEntityExists({ id, title, email, queryRunner, entity }: Enti
     }
 }
 
-export async function insertBorrowedBook({ book, borrower, borrow_date, return_date, queryRunner }: InsertProp){
+export async function insertBorrowedBook({ book, borrower, borrow_date, return_date, queryRunner }: InsertProp){ 
     const newBorrowedBook = new BorrowedBooks()
 
     const bookExist = await checkEntityExists({ id: book.id, title: book.title, entity: 'book', queryRunner })
@@ -90,8 +90,6 @@ export async function updateBorrowedBook({ id, return_date, queryRunner }: Updat
     return borrowedBook
 }
 
-const borrowedBooks = AppDataSource.getRepository(BorrowedBooks)
-
 interface GetBorrowedBooksByPage {
     page_number: number
     page_size: number
@@ -100,6 +98,7 @@ interface GetBorrowedBooksByPage {
 }
 
 export async function getBorrowedBooksByPage({ id, page_number, page_size, search }:GetBorrowedBooksByPage){
+    const borrowedBooks = AppDataSource.getRepository(BorrowedBooks)
     const skip = (page_number - 1) * page_size
 
     const queryBuilder = borrowedBooks.createQueryBuilder('borrowedBooks')
@@ -111,7 +110,7 @@ export async function getBorrowedBooksByPage({ id, page_number, page_size, searc
         .where('borrowedBooks.is_deleted IS NULL OR borrowedBooks.is_deleted = false')
 
     if (id) {
-        queryBuilder.where('users.user_id = :id', { id });
+        queryBuilder.where('users.user_id = :id', { id })
     }
     
     if(search){
