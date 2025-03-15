@@ -11,7 +11,7 @@ The app supports Role-Based Access Control with four distinct roles:
 
 ## Features
 
-* Book Management: Add, update, and remove books from the library.
+***Book Management**: Add, update, and remove books from the library.
 * Author Management: Add, update, and remove authors.
 * Borrower Management: Track borrowed books, manage borrow/return dates, and view borrower details.
 * Role-Based Access Control:
