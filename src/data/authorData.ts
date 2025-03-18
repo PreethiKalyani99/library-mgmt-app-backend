@@ -29,12 +29,11 @@ interface GetAuthorsByPage {
 
 export async function insertAuthor({ name, country, queryRunner, userId }: AuthorData) {
     const user = await queryRunner.manager.findOne(Users, { where: { user_id: userId }})
-    
-    const newAuthor = queryRunner.manager.create(Authors, {
-        name,
-        country: country,
-        created_by: user || null
-    })
+
+    const newAuthor = new Authors()
+    newAuthor.name = name
+    newAuthor.country = country 
+    newAuthor.users = user || null
 
     await queryRunner.manager.save(newAuthor)
     return newAuthor
