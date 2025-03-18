@@ -11,14 +11,14 @@ The app supports Role-Based Access Control with four distinct roles:
 
 ## Features
 
-* Book Management: Add, update, and remove books from the library.
-* Author Management: Add, update, and remove authors.
-* Borrower Management: Track borrowed books, manage borrow/return dates, and view borrower details.
-* Role-Based Access Control:
-    1. Admin: Full access to all operations (manages users, books, authors, and borrowed books).
-    2. Librarian: Full access to all operations, except managing users.
-    3. Receptionist: Manage borrowed books information (borrow/return books).
-    4. Reader: View their borrowed books and available books in the library.
+* **Book Management**: Add, update, and remove books from the library.
+* **Author Management**: Add, update, and remove authors.
+* **Borrower Management**: Track borrowed books, manage borrow/return dates, and view borrower details.
+* **Role-Based Access Control**:
+    1. **Admin**: Full access to all operations (manages users, books, authors, and borrowed books).
+    2. **Librarian**: Full access to all operations, except managing users.
+    3. **Receptionist**: Manage borrowed books information (borrow/return books).
+    4. **Reader**: View their borrowed books and available books in the library.
 
 ## Tech Stack
 
@@ -32,9 +32,9 @@ The app supports Role-Based Access Control with four distinct roles:
 
 ### Installation
 
-* Clone the repository: git clone https://github.com/PreethiKalyani99/library-mgmt-app-backend.git
+* Clone the repository: **git clone https://github.com/PreethiKalyani99/library-mgmt-app-backend.git**
 
-* Install dependencies: npm install
+* Install dependencies: **npm install**
 
 * Refer to the .env.example file to set up the necessary environment variables.
 
