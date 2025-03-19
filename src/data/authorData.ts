@@ -75,12 +75,11 @@ export async function getAuthorsById({ author_id }: GetAuthorProps) {
     const authors = AppDataSource.getRepository(Authors)
 
     const author = await authors.findOne({ where: { author_id }, relations: ['users'] })
-    if (author) {
-        return author
-    }
-    else {
+    
+    if (!author) {
         throw new Error(`Author with id ${author_id} not found`)
     }
+    return author
 }
 
 function getAllAuthors(){

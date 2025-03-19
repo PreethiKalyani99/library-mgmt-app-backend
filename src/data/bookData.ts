@@ -164,12 +164,10 @@ export async function getBookById({ book_id }: GetBookById) {
 
     const book = await books.findOne({ where: { book_id }, relations: ['author'] })
 
-    if (book) {
-        return book
-    }
-    else {
+    if (!book) {
         throw new Error(`Book with id ${book_id} not found`)
     }
+    return book
 }
 
 export async function getBooksByPage({ page_number, page_size, search }: GetBooksByPage){
