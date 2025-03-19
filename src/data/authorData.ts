@@ -68,7 +68,7 @@ export async function deleteAuthor(author_id: number, queryRunner: any) {
 
     await queryRunner.manager.remove(authorToDelete)
 
-    return authorToDelete
+    return
 }
 
 export async function getAuthorsById({ author_id }: GetAuthorProps) {

@@ -83,9 +83,11 @@ export async function insertBook({ author, title, published_year, queryRunner, u
     }
 
     if(userId){
-        const user = await queryRunner.manager.findOne(Users, { where: { user_id: userId }})
+        const user = await queryRunner.manager.findOne(Users, { where: { user_id: userId }, select: ["user_id", "email"]})
         newBook.users = user || null
     }
+
+    newBook.is_deleted = false
 
     await queryRunner.manager.save(newBook)
     return newBook
@@ -95,7 +97,7 @@ export async function updateBook({ book_id, title, author, published_year, query
     const bookToUpdate = await queryRunner.manager.findOne(Books, { where: { book_id } })
 
     if (!bookToUpdate) {
-        throw new Error(`Book with id ${book_id} not found`)
+        throw new Error(`Book with id ${book_id} not found`) 
     }
 
     if (title) {
@@ -154,7 +156,7 @@ export async function deleteBook(book_id: number, queryRunner: any) {
 
     await queryRunner.manager.save(bookToDelete)
 
-    return bookToDelete
+    return
 }
 
 export async function getBookById({ book_id }: GetBookById) {
