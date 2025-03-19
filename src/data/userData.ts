@@ -16,7 +16,7 @@ interface UserExistProp {
     email?: string
 }
 
-async function isUserExists({ id, email, queryRunner }: UserExistProp){
+async function findUser({ id, email, queryRunner }: UserExistProp){
     if(email){
         const lowerCaseEmail = email.toLowerCase()
         return await queryRunner.manager.findOne(Users, { where: { email: lowerCaseEmail }})
@@ -27,7 +27,7 @@ async function isUserExists({ id, email, queryRunner }: UserExistProp){
 }
 
 export async function insertUser({email, password, queryRunner, role}: UserProps){
-    const user = await isUserExists({ email, queryRunner })
+    const user = await findUser({ email, queryRunner })
     if(user){
         throw new Error(`User ${email.toLowerCase()} already exists`)
     }
@@ -54,7 +54,7 @@ interface GetUserProp {
 }
 
 export async function getUser({ email, password, queryRunner }: GetUserProp) {
-    const user = await isUserExists({ email, queryRunner })
+    const user = await findUser({ email, queryRunner })
 
     if(!user){
         throw new Error(`User with email ${email} does not exist`) 
@@ -75,7 +75,7 @@ interface UpdateUserProp {
 }
 
 export async function updateUser({ id, role, queryRunner }: UpdateUserProp) {
-    const user = await isUserExists({ id, queryRunner })
+    const user = await findUser({ id, queryRunner })
     
     if(!user){
         throw new Error(`User with ID ${id} does not exist`)

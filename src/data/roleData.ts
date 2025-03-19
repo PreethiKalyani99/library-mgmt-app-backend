@@ -6,7 +6,7 @@ interface RoleProp {
     queryRunner: any
 }
 
-async function isRoleExist({ role, queryRunner }: RoleProp){
+async function getRole({ role, queryRunner }: RoleProp){
     const lowercaseRole = role.toLowerCase()
     return await queryRunner.manager.findOne(Roles, { where: { role: lowercaseRole }})
 }
@@ -14,7 +14,7 @@ async function isRoleExist({ role, queryRunner }: RoleProp){
 export async function createRole({ role, queryRunner }: RoleProp){
     const newRole = new Roles()
 
-    const roleExist = await isRoleExist({ role, queryRunner })
+    const roleExist = await getRole({ role, queryRunner })
 
     if(roleExist){
         throw new Error(`Role ${role} already exists`)

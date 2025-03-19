@@ -36,18 +36,17 @@ interface GetBooksByPage {
     search: string
 }
 
-export async function isAuthorExists(author_id: number | null, name: string | null, queryRunner: any) {
-    if(author_id){
-        const author = await queryRunner.manager.findOne(Authors, { where: { author_id } })
-        return author
-    }
-    else{
-        const author = await queryRunner.manager.createQueryBuilder(Authors, "author")
-        .where("LOWER(author.name) = LOWER(:name)", {name})
-        .getOne()
-        
-       return author
-    }
+async function getByName(name: string, queryRunner: any){
+    const author = await queryRunner.manager.createQueryBuilder(Authors, "author")
+    .where("LOWER(author.name) = LOWER(:name)", {name})
+    .getOne()
+
+   return author
+}
+
+async function getById(author_id: number, queryRunner: any){
+    const author = await queryRunner.manager.findOne(Authors, { where: { author_id } })
+    return author
 }
 
 export async function insertBook({ author, title, published_year, queryRunner, userId }: InsertProps) {
@@ -55,7 +54,7 @@ export async function insertBook({ author, title, published_year, queryRunner, u
     newBook.title = title
 
     if (author.id) {
-        const authorExists = await isAuthorExists(author.id, null, queryRunner)
+        const authorExists = await getById(author.id, queryRunner)
 
         if (!authorExists) {
             throw new Error(`Author with id ${author.id} not found`)
@@ -64,7 +63,7 @@ export async function insertBook({ author, title, published_year, queryRunner, u
     }
 
     if(!author.id && author.name){
-        const authorExists = await isAuthorExists(null, author.name, queryRunner)
+        const authorExists = await getByName(author.name, queryRunner)
         if(authorExists){
             newBook.author = authorExists
         }
@@ -101,7 +100,7 @@ export async function updateBook({ book_id, title, author, published_year, query
     }
 
     if (author?.id) {
-        const authorExists = await isAuthorExists(author.id, null, queryRunner)
+        const authorExists = await getById(author.id, queryRunner)
         if (!authorExists) {
             throw new Error(`Author id ${author.id} not found`)
         }
@@ -110,7 +109,7 @@ export async function updateBook({ book_id, title, author, published_year, query
     }
 
     if(!author?.id && author?.name){
-        const authorExists = await isAuthorExists(null, author.name, queryRunner)
+        const authorExists = await getByName(author.name, queryRunner)
         if(!authorExists){
             const newAuthor = await insertAuthor({name: author.name, country: author.country || null, queryRunner, userId})
             bookToUpdate.author = newAuthor
