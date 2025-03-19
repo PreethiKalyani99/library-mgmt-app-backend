@@ -39,18 +39,14 @@ interface GetBooksByPage {
 export async function isAuthorExists(author_id: number | null, name: string | null, queryRunner: any) {
     if(author_id){
         const author = await queryRunner.manager.findOne(Authors, { where: { author_id } })
-        if (author) {
-            return author
-        }
+        return author
     }
     else{
         const author = await queryRunner.manager.createQueryBuilder(Authors, "author")
         .where("LOWER(author.name) = LOWER(:name)", {name})
         .getOne()
-
-        if(author){
-            return author
-        }
+        
+       return author
     }
 }
 
