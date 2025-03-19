@@ -65,10 +65,6 @@ export const borrowedBookCreateSchema = Joi.object({
         .iso()
         .required()
         .error(new Error("Borrow date must be a valid date (YYYY-MM-DD)")),
-    return_date: Joi.date()
-        .iso()
-        .allow(null)
-        .error(new Error("Return date must be a valid date (YYYY-MM-DD) and after borrow date"))
 })
 
 export const borrowedBookUpdateSchema = Joi.object({

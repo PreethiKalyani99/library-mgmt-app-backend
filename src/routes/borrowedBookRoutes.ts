@@ -20,8 +20,8 @@ router.post('/', authorizeRole([roles.LIBRARIAN, roles.RECEPTIONIST]), async (re
         if(error){
             throw new Error(`${error}`)
         }
-        const { book, borrower, borrow_date, return_date } = value
-        const result = await insertBorrowedBook({ book, borrower, borrow_date, return_date, queryRunner })
+        const { book, borrower, borrow_date } = value
+        const result = await insertBorrowedBook({ book, borrower, borrow_date, queryRunner })
         await queryRunner.commitTransaction()
         res.status(201).json(result)
     }

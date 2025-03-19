@@ -17,7 +17,6 @@ interface InsertProp {
     book: BookProp
     borrower: BorrowerProp
     borrow_date: Date
-    return_date: Date | null
     queryRunner: any
 }
 
@@ -50,7 +49,7 @@ export async function checkEntityExists({ id, title, email, queryRunner, entity 
     }
 }
 
-export async function insertBorrowedBook({ book, borrower, borrow_date, return_date, queryRunner }: InsertProp){ 
+export async function insertBorrowedBook({ book, borrower, borrow_date, queryRunner }: InsertProp){ 
     const newBorrowedBook = new BorrowedBooks()
 
     const bookExist = await checkEntityExists({ id: book.id, title: book.title, entity: 'book', queryRunner })
@@ -66,7 +65,7 @@ export async function insertBorrowedBook({ book, borrower, borrow_date, return_d
     newBorrowedBook.users = userExist
 
     newBorrowedBook.borrow_date = new Date(borrow_date)
-    newBorrowedBook.return_date = return_date || null
+    newBorrowedBook.return_date =  null
 
     await queryRunner.manager.save(newBorrowedBook)
     return newBorrowedBook
