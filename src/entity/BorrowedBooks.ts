@@ -22,5 +22,5 @@ export class BorrowedBooks {
     return_date: Date | null
 
     @DeleteDateColumn({ nullable: true })
-    is_deleted: Date | null
+    deleted_at: Date | null
 }

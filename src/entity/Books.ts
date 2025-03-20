@@ -26,5 +26,5 @@ export class Books{
     borrowedBooks: BorrowedBooks[]
 
     @DeleteDateColumn({ nullable: true })
-    is_deleted: Date | null
+    deleted_at: Date | null
 }
