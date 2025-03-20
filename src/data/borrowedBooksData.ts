@@ -28,37 +28,52 @@ interface EntityProp {
     email?: string
 }
 
-export async function checkEntityExists({ id, title, email, queryRunner, entity }: EntityProp){
-    if(entity === 'book'){
-        if(id){
-            return await queryRunner.manager.findOne(Books, { where: { book_id: id }}) 
-        }
-        else if(title){
-            return await queryRunner.manager.createQueryBuilder(Books, "books")
-            .where("LOWER(books.title) = LOWER(:title)", { title })
-            .getOne() 
-        }
+async function getBookById(id: number, queryRunner: any){
+   const book = await queryRunner.manager.findOne(Books, { where: { book_id: id }}) 
+   return book
+}
+
+async function getBookByTitle(title: string, queryRunner: any){
+    const book = await queryRunner.manager.createQueryBuilder(Books, "books")
+    .where("LOWER(books.title) = LOWER(:title)", { title })
+    .getOne() 
+    return book
+}
+
+async function getUserById(id: number, queryRunner: any){
+    const user = await queryRunner.manager.findOne(Users, { where: { user_id: id }, select: ['email', 'user_id']})
+    return user
+}
+
+async function getUserByEmail(email: string, queryRunner: any){
+    const user = await queryRunner.manager.findOne(Users, { where: { email: email.toLowerCase() }})
+    return user
+}
+
+function getBook(id: number, title: string, queryRunner: any){
+    if(id){
+        return getBookById(id, queryRunner)
     }
-    else if(entity === 'user'){
-        if(id){
-            return await queryRunner.manager.findOne(Users, { where: { user_id: id }})
-        }
-        else if(email){
-            return await queryRunner.manager.findOne(Users, { where: { email: email.toLowerCase() }})
-        }
+    return getBookByTitle(title, queryRunner)
+}
+
+function getUser(id: number, email: string, queryRunner: any){
+    if(id){
+        return getUserById(id, queryRunner)
     }
+    return getUserByEmail(email, queryRunner)
 }
 
 export async function insertBorrowedBook({ book, borrower, borrow_date, queryRunner }: InsertProp){ 
     const newBorrowedBook = new BorrowedBooks()
 
-    const bookExist = await checkEntityExists({ id: book.id, title: book.title, entity: 'book', queryRunner })
+    const bookExist = await getBook(book.id, book.title, queryRunner)
     if(!bookExist){
         throw new Error(`Book with ${book.id ? `id ${book.id}` : `title ${book.title}`} not found`)
     }
     newBorrowedBook.books = bookExist
 
-    const userExist = await checkEntityExists({ id: borrower.id, email: borrower.email, entity: 'user', queryRunner })
+    const userExist = await getUser(borrower.id, borrower.email, queryRunner)
     if(!userExist){
         throw new Error(`Borrower with ${borrower.id ? `id ${borrower.id}` : `email ${borrower.email}`} not found`)
     }
@@ -66,6 +81,7 @@ export async function insertBorrowedBook({ book, borrower, borrow_date, queryRun
 
     newBorrowedBook.borrow_date = new Date(borrow_date)
     newBorrowedBook.return_date =  null
+    newBorrowedBook.is_deleted = false
 
     await queryRunner.manager.save(newBorrowedBook)
     return newBorrowedBook
