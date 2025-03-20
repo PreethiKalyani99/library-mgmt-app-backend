@@ -1,6 +1,7 @@
 import { Authors } from "../entity/Authors";
 import { AppDataSource } from "../data-source";
 import { Users } from "../entity/Users";
+import { throwError } from "../utils/errorMessage";
 
 interface AuthorData {
     queryRunner: any
@@ -43,7 +44,7 @@ export async function updateAuthor({ author_id, name, country, queryRunner }: Up
     const authorToUpdate = await queryRunner.manager.findOne(Authors, { where: { author_id } })
 
     if (!authorToUpdate) {
-        throw new Error(`Author with id ${author_id} not found`)
+        throwError('Author', 'id', author_id)
     }
 
     if (name) {
@@ -63,7 +64,7 @@ export async function deleteAuthor(author_id: number, queryRunner: any) {
     const authorToDelete = await queryRunner.manager.findOne(Authors, { where: { author_id } })
 
     if (!authorToDelete) {
-        throw new Error(`Author with id ${author_id} not found`)
+        throwError('Author', 'id', author_id)
     }
 
     await queryRunner.manager.remove(authorToDelete)
@@ -77,7 +78,7 @@ export async function getAuthorsById({ author_id }: GetAuthorProps) {
     const author = await authors.findOne({ where: { author_id }, relations: ['users'] })
     
     if (!author) {
-        throw new Error(`Author with id ${author_id} not found`)
+        throwError('Author', 'id', author_id)
     }
     return author
 }

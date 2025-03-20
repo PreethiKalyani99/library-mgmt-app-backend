@@ -2,6 +2,7 @@ import { BorrowedBooks } from "../entity/BorrowedBooks";
 import { Books } from "../entity/Books";
 import { Users } from "../entity/Users";
 import { AppDataSource } from "../data-source";
+import { throwError } from "../utils/errorMessage";
 
 interface BookProp {
     id?: number
@@ -61,13 +62,19 @@ export async function insertBorrowedBook({ book, borrower, borrow_date, queryRun
 
     const bookExist = await getBook(book.id, book.title, queryRunner)
     if(!bookExist){
-        throw new Error(`Book with ${book.id ? `id ${book.id}` : `title ${book.title}`} not found`)
+        const field = book.id ? "id"  : "title"
+        const value = book.id ? book.id : book.title
+
+        throwError('Book', field, value)
     }
     newBorrowedBook.books = bookExist
 
     const userExist = await getUser(borrower.id, borrower.email, queryRunner)
     if(!userExist){
-        throw new Error(`Borrower with ${borrower.id ? `id ${borrower.id}` : `email ${borrower.email}`} not found`)
+        const field = borrower.id ? "id"  : "email"
+        const value = borrower.id ? borrower.id : borrower.email
+        
+        throwError('Book', field, value)
     }
     newBorrowedBook.users = userExist
 
@@ -88,7 +95,7 @@ export async function updateBorrowedBook({ id, return_date, queryRunner }: Updat
     const borrowedBook = await queryRunner.manager.findOne(BorrowedBooks, { where: { id }})
 
     if(!borrowedBook){
-        throw new Error(`ID ${id} not found`)
+        throwError('Borrowed book', 'id', id)
     }
 
     borrowedBook.return_date = new Date(return_date)

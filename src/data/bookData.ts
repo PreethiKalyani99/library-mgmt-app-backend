@@ -4,6 +4,7 @@ import { Authors } from "../entity/Authors";
 import { Users } from "../entity/Users";
 import { insertAuthor } from "./authorData";
 import { AppDataSource } from "../data-source";
+import { throwError } from "../utils/errorMessage";
 interface Author {
     id?: number
     name?: string
@@ -74,8 +75,9 @@ export async function insertBook({ author, title, published_year, queryRunner, u
     const authorExist = await findOrCreateAuthor(author.id, author.name, author.country, queryRunner, userId)
 
     if(!authorExist){
-        throw new Error(`Author with id ${author.id} not found`)
+       throwError('Author', 'id', author.id)
     }
+
     newBook.author = authorExist
 
     if (published_year) {
@@ -95,7 +97,7 @@ export async function updateBook({ book_id, title, author, published_year, query
     const bookToUpdate = await queryRunner.manager.findOne(Books, { where: { book_id } })
 
     if (!bookToUpdate) {
-        throw new Error(`Book with id ${book_id} not found`) 
+        throwError('Book', 'id', book_id)
     }
 
     if (title) {
@@ -105,7 +107,7 @@ export async function updateBook({ book_id, title, author, published_year, query
     const authorExist = findOrCreateAuthor(author.id, author.name, author.country, queryRunner, userId)
 
     if(!authorExist){
-        throw new Error(`Author with id ${author.id} not found`)
+        throwError('Author', 'id', author.id)
     }
     bookToUpdate.author = authorExist
 
@@ -126,7 +128,7 @@ export async function deleteBook(book_id: number, queryRunner: any) {
     })
 
     if (!bookToDelete) {
-        throw new Error(`Book with id ${book_id} not found`)
+        throwError('Book', 'id', book_id)
     }
 
     await queryRunner.manager
@@ -150,7 +152,7 @@ export async function getBookById({ book_id }: GetBookById) {
     const book = await books.findOne({ where: { book_id }, relations: ['author'] })
 
     if (!book) {
-        throw new Error(`Book with id ${book_id} not found`)
+        throwError('Book', 'id', book_id)
     }
     return book
 }
