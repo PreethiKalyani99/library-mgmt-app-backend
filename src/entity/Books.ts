@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, DeleteDateColumn } from "typeorm";
 import { Authors } from "./Authors";
 import { Users } from "./Users";
 import { BorrowedBooks } from "./BorrowedBooks";
@@ -25,6 +25,6 @@ export class Books{
     @OneToMany(() => BorrowedBooks, (borrowed_book) => borrowed_book.books)
     borrowedBooks: BorrowedBooks[]
 
-    @Column()
-    is_deleted: boolean | null
+    @DeleteDateColumn({ nullable: true })
+    is_deleted: Date | null
 }

@@ -87,8 +87,6 @@ export async function insertBook({ author, title, published_year, queryRunner, u
         newBook.users = user || null
     }
 
-    newBook.is_deleted = false
-
     await queryRunner.manager.save(newBook)
     return newBook
 }
@@ -122,8 +120,7 @@ export async function updateBook({ book_id, title, author, published_year, query
 export async function deleteBook(book_id: number, queryRunner: any) {
     const bookToDelete = await queryRunner.manager.findOne(Books, { 
         where: [
-            { book_id, is_deleted: false}, 
-            { book_id, is_deleted: null }
+            { book_id, deleted_at: null }
         ],
         relations: ["borrowedBooks"]
     })
@@ -132,16 +129,17 @@ export async function deleteBook(book_id: number, queryRunner: any) {
         throw new Error(`Book with id ${book_id} not found`)
     }
 
-    bookToDelete.is_deleted = true
+    await queryRunner.manager
+        .getRepository(Books)
+        .softDelete(book_id)
 
     if (bookToDelete.borrowedBooks.length > 0) {
         for (const borrowedBook of bookToDelete.borrowedBooks) {
-            borrowedBook.is_deleted = true
+            await queryRunner.manager
+            .getRepository(BorrowedBooks)
+            .softDelete(borrowedBook.id)
         }
-        await queryRunner.manager.save(BorrowedBooks, bookToDelete.borrowedBooks)
     }
-
-    await queryRunner.manager.save(bookToDelete)
 
     return
 }
@@ -167,7 +165,7 @@ export async function getBooksByPage({ page_number, page_size, search }: GetBook
         .leftJoinAndSelect('book.author', "author")
         .leftJoin('book.users', 'users')
         .addSelect(['users.user_id', 'users.email'])
-        .where('book.is_deleted IS NULL OR book.is_deleted = false')
+        .where('book.deleted_at IS NULL')
 
     if(!!search){
         queryBuilder

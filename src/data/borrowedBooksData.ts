@@ -20,14 +20,6 @@ interface InsertProp {
     queryRunner: any
 }
 
-interface EntityProp {
-    entity: string
-    queryRunner: any
-    id?: number
-    title?: string
-    email?: string
-}
-
 async function getBookById(id: number, queryRunner: any){
    const book = await queryRunner.manager.findOne(Books, { where: { book_id: id }}) 
    return book
@@ -81,7 +73,6 @@ export async function insertBorrowedBook({ book, borrower, borrow_date, queryRun
 
     newBorrowedBook.borrow_date = new Date(borrow_date)
     newBorrowedBook.return_date =  null
-    newBorrowedBook.is_deleted = false
 
     await queryRunner.manager.save(newBorrowedBook)
     return newBorrowedBook
@@ -122,7 +113,7 @@ export async function getBorrowedBooksByPage({ id, page_number, page_size, searc
         .leftJoinAndSelect('borrowedBooks.books', 'books')
         .leftJoin('borrowedBooks.users', 'users')
         .addSelect(['users.user_id', 'users.email'])
-        .where('borrowedBooks.is_deleted IS NULL OR borrowedBooks.is_deleted = false')
+        .where('borrowedBooks.deleted_at IS NULL')
 
     if (id) {
         queryBuilder.where('users.user_id = :id', { id })
