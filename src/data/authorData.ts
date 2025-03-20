@@ -10,14 +10,14 @@ interface AuthorData {
     country?: string | null
 }
 
-interface UpdateProps {
+interface UpdateAuthor {
     queryRunner: any
     author_id: number
     name?: string
     country?: string
 }
 
-interface GetAuthorProps {
+interface GetAuthorById {
     author_id: number
 }
 
@@ -40,7 +40,7 @@ export async function insertAuthor({ name, country, queryRunner, userId }: Autho
     return newAuthor
 }
 
-export async function updateAuthor({ author_id, name, country, queryRunner }: UpdateProps) {
+export async function updateAuthor({ author_id, name, country, queryRunner }: UpdateAuthor) {
     const authorToUpdate = await queryRunner.manager.findOne(Authors, { where: { author_id } })
 
     if (!authorToUpdate) {
@@ -72,7 +72,7 @@ export async function deleteAuthor(author_id: number, queryRunner: any) {
     return
 }
 
-export async function getAuthorsById({ author_id }: GetAuthorProps) {
+export async function getAuthorsById({ author_id }: GetAuthorById) {
     const authors = AppDataSource.getRepository(Authors)
 
     const author = await authors.findOne({ where: { author_id }, relations: ['users'] })

@@ -10,7 +10,7 @@ interface Author {
     name?: string
     country?: string
 }
-interface InsertProps {
+interface InsertBook {
     queryRunner: any
     userId: number
     title: string
@@ -18,7 +18,7 @@ interface InsertProps {
     published_year?: number
 }
 
-interface UpdateProps {
+interface UpdateBook {
     userId: number
     queryRunner: any
     book_id: number
@@ -68,7 +68,7 @@ async function findOrCreateAuthor(id: number | null, name: string = '', country 
 
 }
 
-export async function insertBook({ author, title, published_year, queryRunner, userId }: InsertProps) {
+export async function insertBook({ author, title, published_year, queryRunner, userId }: InsertBook) {
     const newBook = new Books()
     newBook.title = title
 
@@ -93,7 +93,7 @@ export async function insertBook({ author, title, published_year, queryRunner, u
     return newBook
 }
 
-export async function updateBook({ book_id, title, author, published_year, queryRunner, userId }: UpdateProps) {
+export async function updateBook({ book_id, title, author, published_year, queryRunner, userId }: UpdateBook) {
     const bookToUpdate = await queryRunner.manager.findOne(Books, { where: { book_id } })
 
     if (!bookToUpdate) {

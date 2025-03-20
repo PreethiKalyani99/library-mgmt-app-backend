@@ -3,20 +3,20 @@ import { Roles } from "../entity/Roles";
 import { compare } from "bcrypt";
 import { AppDataSource } from "../data-source";
 
-interface UserProps{
+interface User{
     email: string
     password: string
     queryRunner:any
     role: string
 }
 
-interface UserExistProp {
+interface FindUser {
     queryRunner:any
     id?: number
     email?: string
 }
 
-async function findUser({ id, email, queryRunner }: UserExistProp){
+async function findUser({ id, email, queryRunner }: FindUser){
     if(email){
         const lowerCaseEmail = email.toLowerCase()
         return await queryRunner.manager.findOne(Users, { where: { email: lowerCaseEmail }})
@@ -26,7 +26,7 @@ async function findUser({ id, email, queryRunner }: UserExistProp){
     }
 }
 
-export async function insertUser({email, password, queryRunner, role}: UserProps){
+export async function insertUser({email, password, queryRunner, role}: User){
     const user = await findUser({ email, queryRunner })
     if(user){
         throw new Error(`User ${email.toLowerCase()} already exists`)
@@ -47,13 +47,13 @@ export async function insertUser({email, password, queryRunner, role}: UserProps
     return newUser
 }
 
-interface GetUserProp {
+interface GetUser {
     email: string
     password: string
     queryRunner: any
 }
 
-export async function getUser({ email, password, queryRunner }: GetUserProp) {
+export async function getUser({ email, password, queryRunner }: GetUser) {
     const user = await findUser({ email, queryRunner })
 
     if(!user){
@@ -68,13 +68,13 @@ export async function getUser({ email, password, queryRunner }: GetUserProp) {
     return user
 }
 
-interface UpdateUserProp {
+interface UpdateUser {
     id: number
     role: string
     queryRunner: any
 }
 
-export async function updateUser({ id, role, queryRunner }: UpdateUserProp) {
+export async function updateUser({ id, role, queryRunner }: UpdateUser) {
     const user = await findUser({ id, queryRunner })
     
     if(!user){
@@ -92,13 +92,13 @@ export async function updateUser({ id, role, queryRunner }: UpdateUserProp) {
     return user
 }
 
-interface GetUsersByPageProp {
+interface GetUsersByPage {
     page_number: number
     page_size: number
     search: string
 }
 
-export async function getUsersByPage({ page_number, page_size, search }: GetUsersByPageProp){
+export async function getUsersByPage({ page_number, page_size, search }: GetUsersByPage){
     const users = AppDataSource.getRepository(Users)
     const skip = (page_number - 1) * page_size
 

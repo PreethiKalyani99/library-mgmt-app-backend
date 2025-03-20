@@ -1,17 +1,17 @@
 import { Roles } from "../entity/Roles";
 import { AppDataSource } from "../data-source";
 
-interface RoleProp {
+interface Role {
     role: string
     queryRunner: any
 }
 
-async function getRole({ role, queryRunner }: RoleProp){
+async function getRole({ role, queryRunner }: Role){
     const lowercaseRole = role.toLowerCase()
     return await queryRunner.manager.findOne(Roles, { where: { role: lowercaseRole }})
 }
 
-export async function createRole({ role, queryRunner }: RoleProp){
+export async function createRole({ role, queryRunner }: Role){
     const newRole = new Roles()
 
     const roleExist = await getRole({ role, queryRunner })

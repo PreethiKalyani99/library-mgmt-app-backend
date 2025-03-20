@@ -4,19 +4,19 @@ import { Users } from "../entity/Users";
 import { AppDataSource } from "../data-source";
 import { throwError } from "../utils/errorMessage";
 
-interface BookProp {
+interface Book {
     id?: number
     title?: string
 }
 
-interface BorrowerProp {
+interface Borrower {
     id?: number
     email?: string
 }
 
-interface InsertProp {
-    book: BookProp
-    borrower: BorrowerProp
+interface InsertBorrowedBook {
+    book: Book
+    borrower: Borrower
     borrow_date: Date
     queryRunner: any
 }
@@ -57,7 +57,7 @@ function getUser(id: number, email: string, queryRunner: any){
     return getUserByEmail(email, queryRunner)
 }
 
-export async function insertBorrowedBook({ book, borrower, borrow_date, queryRunner }: InsertProp){ 
+export async function insertBorrowedBook({ book, borrower, borrow_date, queryRunner }: InsertBorrowedBook){ 
     const newBorrowedBook = new BorrowedBooks()
 
     const bookExist = await getBook(book.id, book.title, queryRunner)
@@ -85,13 +85,13 @@ export async function insertBorrowedBook({ book, borrower, borrow_date, queryRun
     return newBorrowedBook
 }
 
-interface UpdateBorrowerProp {
+interface UpdateBorrowerBook {
     id: number
     return_date: Date | null
     queryRunner: any
 }
 
-export async function updateBorrowedBook({ id, return_date, queryRunner }: UpdateBorrowerProp){
+export async function updateBorrowedBook({ id, return_date, queryRunner }: UpdateBorrowerBook){
     const borrowedBook = await queryRunner.manager.findOne(BorrowedBooks, { where: { id }})
 
     if(!borrowedBook){
