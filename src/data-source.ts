@@ -6,7 +6,8 @@ import { DataSource } from "typeorm"
 export const AppDataSource = new DataSource({
     type: "postgres",
     url: process.env.DATABASE_URL,
-    synchronize: false,
+    synchronize: true,
+    dropSchema: true,
     logging: true,
     entities: ['src/entity/**/*.ts'],
     migrations: [
