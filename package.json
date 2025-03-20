@@ -44,7 +44,6 @@
       "typeorm": "typeorm-ts-node-esm",
       "migration:run": "typeorm-ts-node-commonjs migration:run -t each -d ./src/data-source.ts",
       "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./src/data-source.ts",
-      "build": "npm run build",
       "predeploy": "npm run migration:run",
       "test": "jest --config jest.config.ts --testTimeout=40000"
    }
