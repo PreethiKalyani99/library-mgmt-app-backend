@@ -1,4 +1,4 @@
-import { Browser, ElementHandle } from "puppeteer"
+import { Browser, Page, ElementHandle } from "puppeteer"
 import fs from 'fs'
 import path from 'path'
 
@@ -8,10 +8,10 @@ interface Result {
 }
 
 export async function scrapeContent(browser: Browser) {
-    const searchQuery = "chennai murders"
+    const searchQuery = "trichy murders"
     const url = `https://www.thehindu.com/search/#gsc.tab=0&gsc.q=${searchQuery}&gsc.sort=`
 
-    const page = await browser.newPage()
+    const page: Page = await browser.newPage()
 
     await page.setViewport({ width: 1280, height: 800 })
 
@@ -27,13 +27,12 @@ export async function scrapeContent(browser: Browser) {
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0"
     ]
-    
 
     const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)]
 
     await page.setUserAgent(randomUserAgent)
 
-    await page.goto(url, { timeout: 110000 })
+    await page.goto(url, { timeout: 110000, waitUntil: 'domcontentloaded' })
 
     const result: Result[] = []
 
@@ -49,13 +48,18 @@ export async function scrapeContent(browser: Browser) {
         if(i !== 0){
             const pageElement = pageElements[i]
 
-            await page.evaluate((el) => {
-                el.click()
-            }, pageElement)
-            
-            // Wait for content to load after page navigation
-            await page.waitForSelector("div.gsc-resultsbox-visible", { timeout: 110000 })
+            try {
+                await page.evaluate((el) => {
+                    el.click()
+                }, pageElement)
 
+                await page.waitForSelector("div.gsc-resultsbox-visible", { timeout: 110000 })
+
+                await new Promise(r => setTimeout(r, 5000))
+            } 
+            catch (error) {
+                console.log("Error clicking page element", error)
+            }  
         }
 
         pageElements = await page.$$("div.gsc-cursor-page")
@@ -71,6 +75,8 @@ export async function scrapeContent(browser: Browser) {
                 const articlePage = await browser.newPage()
                 await articlePage.goto(link, { waitUntil: 'load', timeout: 110000 })
                 await articlePage.waitForSelector("h1.title", { timeout: 110000 }).catch(error => { return })
+
+                await new Promise(r => setTimeout(r, 5000))
     
                 const title = await articlePage.$eval("h1.title", (element) => element.textContent.trim())
                 const body = await articlePage.$$eval("div.articlebodycontent p", (elements) =>
